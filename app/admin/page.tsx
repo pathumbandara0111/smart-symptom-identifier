@@ -1,23 +1,42 @@
 "use client";
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, Activity, Settings, Loader2, Hospital, ShieldAlert, FileText, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Users, Activity, Settings, Loader2, Hospital, ShieldAlert, FileText, ChevronRight, LogOut, BookOpen } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AdminDashboardPage() {
-  const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalSessions: 0, emergencyAlerts: 0, topIllness: "..." });
+  const router = useRouter();
 
   useEffect(() => {
-    // Basic protection - requires backend validation too
-    if (status === "unauthenticated") {
-      window.location.href = "/login";
-    } else if (status === "authenticated") {
+    checkSession();
+  }, []);
+
+  async function checkSession() {
+    try {
+      const res = await fetch("/api/admin/auth");
+      if (!res.ok) {
+        router.push("/admin/login");
+        return;
+      }
       fetchStats();
       setLoading(false);
+    } catch (err) {
+      router.push("/admin/login");
     }
-  }, [status]);
+  }
+
+  async function handleLogout() {
+    try {
+      await fetch("/api/admin/auth", { method: "DELETE" });
+      toast.success("Admin logged out");
+      router.push("/admin/login");
+    } catch (err) {
+      toast.error("Logout failed");
+    }
+  }
 
   async function fetchStats() {
     try {
@@ -31,7 +50,7 @@ export default function AdminDashboardPage() {
     }
   }
 
-  if (loading || status === "loading") {
+  if (loading) {
     return (
       <div className="page-container flex items-center justify-center h-[50vh]">
         <Loader2 className="animate-spin text-[var(--primary-light)]" size={48} />
@@ -39,18 +58,20 @@ export default function AdminDashboardPage() {
     );
   }
 
-  // Optionally block non-admins here visually
-  // if (session?.user?.role !== "ADMIN") return <div>Access Denied</div>;
-
   return (
     <div className="page-container">
       <div className="content-wrapper">
-        <div className="page-header" style={{ marginBottom: "32px" }}>
-          <div style={{ display: "inline-flex", padding: "8px 16px", background: "rgba(239, 71, 111, 0.1)", borderRadius: "50px", color: "#EF476F", fontSize: "14px", fontWeight: 600, alignItems: "center", gap: "6px", marginBottom: "16px" }}>
-            <ShieldAlert size={16} /> Admin Portal
+        <div className="page-header" style={{ marginBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ display: "inline-flex", padding: "8px 16px", background: "rgba(239, 71, 111, 0.1)", borderRadius: "50px", color: "#EF476F", fontSize: "14px", fontWeight: 600, alignItems: "center", gap: "6px", marginBottom: "16px" }}>
+              <ShieldAlert size={16} /> Admin Portal
+            </div>
+            <h1 className="page-title">System Administration</h1>
+            <p className="page-subtitle">Manage doctors, hospitals, and view platform statistics.</p>
           </div>
-          <h1 className="page-title">System Administration</h1>
-          <p className="page-subtitle">Manage doctors, hospitals, and view platform statistics.</p>
+          <button onClick={handleLogout} className="btn-secondary" style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(239, 71, 111, 0.1)", color: "#EF476F", borderColor: "rgba(239, 71, 111, 0.2)" }}>
+            <LogOut size={18} /> Sign Out
+          </button>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px" }}>
@@ -76,6 +97,19 @@ export default function AdminDashboardPage() {
               <div style={{ flex: 1 }}>
                 <h3 style={{ fontSize: "18px", color: "white", marginBottom: "4px" }}>Manage Hospitals</h3>
                 <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>Update hospital records and locations.</p>
+              </div>
+              <ChevronRight color="var(--text-muted)" />
+            </div>
+          </Link>
+
+          <Link href="/admin/first-aid" style={{ textDecoration: "none" }}>
+            <div className="glass-card" style={{ padding: "32px", display: "flex", alignItems: "center", gap: "20px", transition: "transform 0.2s ease, border 0.2s" }} onMouseOver={(e) => e.currentTarget.style.borderColor = "var(--warning)"} onMouseOut={(e) => e.currentTarget.style.borderColor = "var(--glass-border)"}>
+              <div style={{ width: "64px", height: "64px", borderRadius: "16px", background: "rgba(255, 209, 102, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--warning)" }}>
+                <BookOpen size={32} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ fontSize: "18px", color: "white", marginBottom: "4px" }}>First Aid Guides</h3>
+                <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>Manage illnesses and first-aid instructions.</p>
               </div>
               <ChevronRight color="var(--text-muted)" />
             </div>
