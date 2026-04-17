@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
+import bcrypt from "bcryptjs";
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -158,6 +159,19 @@ async function main() {
   }
 
   console.log(`✅ Created ${illnessData.length} illnesses with first-aid steps`);
+
+  // ── Admin ────────────────────────────────────────────────────────────────────
+  const adminPassword = await bcrypt.hash("admin123", 10);
+  await prisma.admin.upsert({
+    where: { username: "admin" },
+    update: {},
+    create: {
+      username: "admin",
+      password: adminPassword,
+    },
+  });
+  console.log("✅ Created default admin account (admin / admin123)");
+
   console.log("🎉 Database seeding complete!");
 }
 

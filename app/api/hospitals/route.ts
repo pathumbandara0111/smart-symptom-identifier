@@ -41,3 +41,23 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Failed to delete hospital" }, { status: 500 });
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, name, address, lat, lng, phone, type } = body;
+
+    if (!id || !name || !address || !lat || !lng || !phone) {
+      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    }
+
+    const hospital = await prisma.hospital.update({
+      where: { id },
+      data: { name, address, lat, lng, phone, type },
+    });
+
+    return NextResponse.json({ success: true, hospital });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to update hospital" }, { status: 500 });
+  }
+}
