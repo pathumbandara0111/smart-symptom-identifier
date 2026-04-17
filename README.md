@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🩺 Smart Symptom Identifier
 
-## Getting Started
+An advanced AI-powered health platform designed to help users identify potential illnesses, access verified first-aid guidance, and locate medical professional—instantly.
 
-First, run the development server:
+## 🚀 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 1. AI Symptom Checker (Text & Image)
+- **Natural Language Analysis**: Describe your symptoms in plain text and get instant predictions powered by **Google Gemini 2.5 Flash AI**.
+- **Visual Analysis**: Upload photos of visible symptoms (rashes, redness, etc.) for AI-driven visual condition identification.
+- **Risk Assessment**: Automatically identifies critical symptoms and provides emergency warnings.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Medical Directories
+- **Doctor Locator**: Real-time map integration to find nearby hospitals and clinics.
+- **Specialist Recommendations**: AI suggests the specific type of doctor you should consult based on your symptoms.
+- **Contact Details**: One-tap calling for hospitals and direct navigation links.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. First Aid Guides
+- **Verified Instructions**: Step-by-step guides for 20+ common medical situations (Allergies, Respiratory issues, Injuries, etc.).
+- **Responsive View**: Desktop side-by-side view and mobile bottom-sheet modal for quick access in urgent moments.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Admin Portal (Secure)
+- **Separate Management System**: Dedicated admin login and database table for system security.
+- **Full CRUD Operations**: Manage Doctors, Hospitals, and First Aid guides through a professional glassmorphism dashboard.
 
-## Learn More
+## 🛠️ Technology Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Frontend**: Next.js 15+ (App Router), TypeScript, Tailwind CSS, Lucide Icons.
+- **Styling**: Vanilla CSS & Styled-JSX (Glassmorphism design system).
+- **Backend**: Next.js API Routes, Prisma ORM.
+- **Database**: PostgreSQL (Neon.tech).
+- **AI Integration**: Google Generative AI (Gemini 2.5 Flash).
+- **Maps**: Google Maps JavaScript API.
+- **Authentication**: NextAuth.js.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📦 Installation & Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd webapp
+   ```
 
-## Deploy on Vercel
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Environment Variables**:
+   Create a `.env` file in the root directory and add the following:
+   ```env
+   DATABASE_URL="your-postgresql-url"
+   NEXTAUTH_SECRET="your-secret"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="your-google-maps-key"
+   GEMINI_API_KEY="your-gemini-api-key"
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **Database Setup**:
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   npx prisma db seed
+   ```
+
+5. **Run the app**:
+   ```bash
+   npm run dev
+   ```
+
+## 🔐 Admin Access
+- **URL**: `/admin/login`
+- **Default Username**: `admin`
+- **Default Password**: `admin123`
+
+---
+*⚠️ **Disclaimer**: This application is for informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a qualified health provider with any questions you may have regarding a medical condition.*
+

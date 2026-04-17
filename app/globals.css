@@ -418,12 +418,150 @@ h1, h2, h3, h4, h5, h6 {
 ::selection { background: rgba(0, 119, 182, 0.3); }
 
 /* ── Responsive ── */
+
+/* ─ Tablet & Mobile base (≤ 768px) ─ */
 @media (max-width: 768px) {
+  /* Navbar */
   .nav-links { display: none; }
-  .feature-grid { grid-template-columns: 1fr 1fr; }
+  .navbar { padding: 0 16px; }
+
+  /* Layout */
   .content-wrapper { padding: 0 16px; }
+  .page-container { padding-top: 80px; padding-bottom: 40px; }
+  .page-header { margin-bottom: 24px; }
+  .page-subtitle { font-size: 14px; }
+
+  /* Feature grid */
+  .feature-grid { grid-template-columns: 1fr 1fr; }
+  .feature-card { padding: 20px 16px; gap: 12px; }
+
+  /* Buttons */
+  .btn-emergency { padding: 12px 20px; font-size: 15px; }
+  .btn-primary  { padding: 10px 20px; font-size: 14px; }
+  .btn-secondary{ padding: 10px 20px; font-size: 14px; }
+
+  /* Form grids — collapse all two-column admin forms to single column */
+  form[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+  form > div[style*="gridColumn"] {
+    grid-column: 1 !important;
+  }
+
+  /* Glass cards inside grids */
+  div[style*="gridTemplateColumns: repeat(auto-fit"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stats bar on home page */
+  div[style*="gap: 60px"] {
+    gap: 24px !important;
+  }
+
+  /* Hero section padding */
+  section[style*="padding: \"60px 24px 80px\""],
+  section[style*="60px 24px 80px"] {
+    padding: 32px 16px 48px !important;
+  }
+
+  /* Bottom CTA */
+  div[style*="padding: \"60px 40px\""],
+  div[style*="60px 40px"] {
+    padding: 36px 20px !important;
+  }
+
+  /* Symptom Checker / Image Checker page forms */
+  .symptom-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* Symptom Checker results two-column → single column */
+  .symptom-result-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Admin dashboard cards */
+  .admin-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+
+
+  /* Admin dashboard cards */
+  .admin-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Page headers with flex (admin pages) */
+  div[style*="justifyContent: \"space-between\""][style*="flexWrap"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* Admin edit forms */
+  div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
 }
 
+/* ─ Small Mobile (≤ 480px) ─ */
 @media (max-width: 480px) {
+  /* Feature grid single column */
   .feature-grid { grid-template-columns: 1fr; }
+
+  /* Navbar logo size */
+  .nav-logo { font-size: 17px; }
+
+  /* Hero title */
+  h1[style*="clamp"] { font-size: clamp(28px, 8vw, 40px); }
+
+  /* Buttons go full width on tiny screens */
+  div[style*="justifyContent: \"center\""][style*="flexWrap: \"wrap\""] {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Stats: 2 columns */
+  div[style*="gap: 24px"][style*="flexWrap: wrap"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Step items */
+  .step-item { flex-direction: column; gap: 10px; }
+
+  /* Emergency banner */
+  .emergency-banner { flex-direction: column; text-align: center; }
+
+  /* Admin first-aid steps builder */
+  div[style*="display: \"flex\""][style*="gap: \"10px\""] {
+    flex-direction: column;
+  }
+
+  /* Glass cards on very small screens */
+  .glass-card { border-radius: 12px; }
+
+  /* Page title font clamp adjustment */
+  .page-title { font-size: clamp(22px, 6vw, 36px); }
+
+  /* Bottom CTA heading */
+  h2[style*="32px"] { font-size: 22px !important; }
+
+  /* Form inputs - larger touch targets */
+  .form-input { padding: 14px 14px; font-size: 16px; } /* 16px prevents iOS zoom */
+
+
 }
+
+/* ─ Tablet only (769px – 1024px) ─ */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .content-wrapper { padding: 0 24px; max-width: 100%; }
+  .feature-grid { grid-template-columns: repeat(3, 1fr); }
+  .navbar { padding: 0 24px; }
+
+  /* Two-column forms stay two-column on tablet */
+  .admin-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+

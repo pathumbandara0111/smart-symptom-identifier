@@ -96,7 +96,7 @@ export default function SymptomCheckerPage() {
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: result ? "1fr 1fr" : "1fr", gap: "24px", transition: "all 0.3s" }}>
+        <div className="symptom-result-grid" style={{ display: "grid", gridTemplateColumns: result ? "1fr 1fr" : "1fr", gap: "24px", transition: "all 0.3s" }}>
           {/* Input Form */}
           <div className="glass-card" style={{ padding: "32px" }}>
             <h2 style={{ fontSize: "20px", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
