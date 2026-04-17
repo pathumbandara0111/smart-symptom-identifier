@@ -1,0 +1,86 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions  SymptomSession[]
+  feedbacks Feedback[]
+}
+
+model SymptomSession {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symptomText  String?
+  imagePath    String?
+  aiResponse   Json
+  severity     String   @default("mild")
+  createdAt    DateTime @default(now())
+}
+
+model Illness {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String
+  category    String     @default("general")
+  firstAids   FirstAid[]
+}
+
+model FirstAid {
+  id          String  @id @default(cuid())
+  illnessId   String
+  illness     Illness @relation(fields: [illnessId], references: [id], onDelete: Cascade)
+  step        Int
+  instruction String
+}
+
+model Hospital {
+  id      String   @id @default(cuid())
+  name    String
+  address String
+  lat     Float
+  lng     Float
+  phone   String
+  type    String   @default("General")
+  doctors Doctor[]
+}
+
+model Doctor {
+  id         String   @id @default(cuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  name       String
+  speciality String
+  fee        Float
+  phone      String
+  available  Boolean  @default(true)
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+}
