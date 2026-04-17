@@ -52,8 +52,8 @@ export function Navbar() {
           ))}
         </ul>
 
-        {/* Right Side */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        {/* Right Side - Desktop Auth */}
+        <div className="nav-auth-desktop" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {session ? (
             <>
               <Link href="/dashboard" className="nav-link" style={{ display: "flex" }}>
@@ -134,6 +134,36 @@ export function Navbar() {
               {label}
             </Link>
           ))}
+          <div style={{ borderTop: "1px solid var(--glass-border)", marginTop: "8px", paddingTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+            {session ? (
+              <>
+                <Link href="/dashboard" className="nav-link" onClick={() => setMobileOpen(false)} style={{ fontSize: "16px", padding: "14px 16px" }}>
+                  <LayoutDashboard size={18} /> Dashboard
+                </Link>
+                {(session.user as any)?.role === "ADMIN" && (
+                  <Link href="/admin" className="nav-link" onClick={() => setMobileOpen(false)} style={{ fontSize: "16px", padding: "14px 16px" }}>
+                    <Shield size={18} /> Admin
+                  </Link>
+                )}
+                <button
+                  onClick={() => { signOut({ callbackUrl: "/" }); setMobileOpen(false); }}
+                  className="btn-secondary"
+                  style={{ width: "100%", justifyContent: "center", padding: "14px" }}
+                >
+                  <LogOut size={16} /> Sign Out
+                </button>
+              </>
+            ) : (
+              <div style={{ display: "flex", gap: "8px" }}>
+                <Link href="/login" className="btn-secondary" onClick={() => setMobileOpen(false)} style={{ flex: 1, justifyContent: "center" }}>
+                  Sign In
+                </Link>
+                <Link href="/register" className="btn-primary" onClick={() => setMobileOpen(false)} style={{ flex: 1, justifyContent: "center" }}>
+                  Get Started
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -141,6 +171,10 @@ export function Navbar() {
         @media (max-width: 768px) {
           .mobile-menu-btn { display: block !important; }
           .hidden-mobile { display: none; }
+          .nav-auth-desktop { display: none; }
+        }
+        @media (min-width: 769px) {
+          .mobile-menu-btn { display: none !important; }
         }
       `}</style>
     </>

@@ -174,11 +174,11 @@ export default function DoctorLocatorPage() {
   };
 
   return (
-    <div className="page-container" style={{ padding: 0, height: "calc(100vh - 70px)", overflow: "hidden" }}>
-      <div style={{ display: "flex", height: "100%", width: "100%" }}>
+    <div className="locator-page-container page-container" style={{ padding: 0 }}>
+      <div className="locator-layout" style={{ display: "flex", height: "100%", width: "100%" }}>
         
         {/* Sidebar */}
-        <div style={{ 
+        <div className="locator-sidebar" style={{ 
           width: "400px", 
           background: "rgba(2, 11, 24, 0.95)", 
           backdropFilter: "blur(20px)",
@@ -256,12 +256,12 @@ export default function DoctorLocatorPage() {
         </div>
 
         {/* Map Area */}
-        <div style={{ flex: 1, position: "relative" }}>
+        <div className="locator-map" style={{ flex: 1, position: "relative", minHeight: "280px" }}>
           <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
           
           {/* Hospital Info Overlay */}
           {selectedHospital && (
-            <div style={{ 
+            <div className="hospital-overlay" style={{ 
               position: "absolute", 
               bottom: "40px", 
               left: "40px", 
@@ -327,6 +327,10 @@ export default function DoctorLocatorPage() {
       </div>
 
       <style jsx global>{`
+        .locator-page-container {
+          height: calc(100vh - 70px);
+          overflow: hidden;
+        }
         .custom-scrollbar::-webkit-scrollbar {
           width: 5px;
           height: 5px;
@@ -340,6 +344,42 @@ export default function DoctorLocatorPage() {
         }
         .active-facility {
           box-shadow: 0 0 20px rgba(0, 180, 216, 0.2);
+        }
+        @media (max-width: 768px) {
+          .locator-page-container {
+            height: auto !important;
+            overflow: visible !important;
+            padding-top: 70px !important;
+            display: block !important;
+          }
+          .locator-layout {
+            display: block !important;
+            height: auto !important;
+          }
+          .locator-sidebar {
+            width: 100% !important;
+            height: 400px !important;
+            max-height: 400px !important;
+            border-right: none !important;
+            border-bottom: 1px solid rgba(0,180,216,0.2) !important;
+          }
+          .locator-map {
+            width: 100% !important;
+            height: 450px !important;
+            min-height: 450px !important;
+            display: block !important;
+          }
+          .hospital-overlay {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            top: auto !important;
+            max-width: 100% !important;
+            border-radius: 20px 20px 0 0 !important;
+            padding: 16px !important;
+            z-index: 1000 !important;
+          }
         }
       `}</style>
     </div>

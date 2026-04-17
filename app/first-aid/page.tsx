@@ -37,6 +37,35 @@ export default function FirstAidPage() {
   const categories = ["all", ...Array.from(new Set(illnesses.map((i) => i.category)))];
   const filtered = activeCategory === "all" ? illnesses : illnesses.filter((i) => i.category === activeCategory);
 
+  const DetailPanel = ({ illness }: { illness: Illness }) => (
+    <div className="glass-card" style={{ padding: "32px", alignSelf: "start" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+        <h2 style={{ fontSize: "22px" }}>{illness.name}</h2>
+        <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "24px", lineHeight: 1, padding: "4px 8px" }}>✕</button>
+      </div>
+      <p style={{ fontSize: "14px", color: "var(--text-muted)", marginBottom: "28px", lineHeight: 1.6 }}>{illness.description}</p>
+
+      <h4 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>
+        First Aid Steps
+      </h4>
+
+      {illness.firstAids
+        .sort((a, b) => a.step - b.step)
+        .map((fa) => (
+          <div key={fa.step} className="step-item">
+            <div className="step-number">{fa.step}</div>
+            <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-secondary)" }}>{fa.instruction}</p>
+          </div>
+        ))}
+
+      <div style={{ marginTop: "24px", padding: "14px", background: "rgba(239, 71, 111, 0.05)", border: "1px solid rgba(239, 71, 111, 0.15)", borderRadius: "10px" }}>
+        <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.6 }}>
+          ⚠️ This information is for guidance only. Always seek professional medical help for serious conditions.
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="page-container">
       <div className="content-wrapper">
@@ -78,66 +107,117 @@ export default function FirstAidPage() {
             <p style={{ marginTop: "16px", color: "var(--text-muted)" }}>Loading first aid guides...</p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: selected ? "280px 1fr" : "repeat(auto-fill, minmax(260px, 1fr))", gap: "16px" }}>
-            {/* Cards */}
-            <div style={selected ? { display: "flex", flexDirection: "column", gap: "12px" } : { display: "contents" }}>
-              {filtered.map((illness) => (
-                <button
-                  key={illness.id}
-                  onClick={() => setSelected(selected?.id === illness.id ? null : illness)}
-                  className="glass-card"
-                  style={{
-                    padding: "24px",
-                    textAlign: "left",
-                    cursor: "pointer",
-                    border: selected?.id === illness.id ? "1px solid var(--primary-light)" : "1px solid var(--glass-border)",
-                    background: selected?.id === illness.id ? "rgba(0, 180, 216, 0.1)" : "var(--glass-bg)",
-                    width: "100%",
-                    display: "block",
-                  }}
-                >
-                  <div style={{ fontSize: "32px", marginBottom: "12px" }}>{categoryIcons[illness.category] || "📋"}</div>
-                  <h3 style={{ fontSize: "16px", marginBottom: "8px", color: "var(--text-primary)" }}>{illness.name}</h3>
-                  <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.5 }}>{illness.description}</p>
-                  <p style={{ marginTop: "12px", fontSize: "12px", color: "var(--primary-light)", fontWeight: 600 }}>
-                    {illness.firstAids.length} steps →
-                  </p>
-                </button>
-              ))}
+          <>
+            {/* ── Desktop Layout (≥769px): side-by-side ── */}
+            <div className="first-aid-desktop">
+              <div style={{ display: "grid", gridTemplateColumns: selected ? "280px 1fr" : "repeat(auto-fill, minmax(260px, 1fr))", gap: "16px" }}>
+                <div style={selected ? { display: "flex", flexDirection: "column", gap: "12px" } : { display: "contents" }}>
+                  {filtered.map((illness) => (
+                    <button
+                      key={illness.id}
+                      onClick={() => setSelected(selected?.id === illness.id ? null : illness)}
+                      className="glass-card"
+                      style={{
+                        padding: "24px", textAlign: "left", cursor: "pointer",
+                        border: selected?.id === illness.id ? "1px solid var(--primary-light)" : "1px solid var(--glass-border)",
+                        background: selected?.id === illness.id ? "rgba(0, 180, 216, 0.1)" : "var(--glass-bg)",
+                        width: "100%", display: "block",
+                      }}
+                    >
+                      <div style={{ fontSize: "32px", marginBottom: "12px" }}>{categoryIcons[illness.category] || "📋"}</div>
+                      <h3 style={{ fontSize: "16px", marginBottom: "8px", color: "var(--text-primary)" }}>{illness.name}</h3>
+                      <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.5 }}>{illness.description}</p>
+                      <p style={{ marginTop: "12px", fontSize: "12px", color: "var(--primary-light)", fontWeight: 600 }}>
+                        {illness.firstAids.length} steps →
+                      </p>
+                    </button>
+                  ))}
+                </div>
+                {selected && <DetailPanel illness={selected} />}
+              </div>
             </div>
 
-            {/* Detail Panel */}
-            {selected && (
-              <div className="glass-card" style={{ padding: "32px", alignSelf: "start" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                  <h2 style={{ fontSize: "22px" }}>{selected.name}</h2>
-                  <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "20px", lineHeight: 1 }}>✕</button>
-                </div>
-                <p style={{ fontSize: "14px", color: "var(--text-muted)", marginBottom: "28px", lineHeight: 1.6 }}>{selected.description}</p>
-
-                <h4 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>
-                  First Aid Steps
-                </h4>
-
-                {selected.firstAids
-                  .sort((a, b) => a.step - b.step)
-                  .map((fa) => (
-                    <div key={fa.step} className="step-item">
-                      <div className="step-number">{fa.step}</div>
-                      <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-secondary)" }}>{fa.instruction}</p>
-                    </div>
-                  ))}
-
-                <div style={{ marginTop: "24px", padding: "14px", background: "rgba(239, 71, 111, 0.05)", border: "1px solid rgba(239, 71, 111, 0.15)", borderRadius: "10px" }}>
-                  <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                    ⚠️ This information is for guidance only. Always seek professional medical help for serious conditions.
-                  </p>
-                </div>
+            {/* ── Mobile Layout (≤768px): cards + bottom sheet modal ── */}
+            <div className="first-aid-mobile">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                {filtered.map((illness) => (
+                  <button
+                    key={illness.id}
+                    onClick={() => setSelected(illness)}
+                    className="glass-card"
+                    style={{
+                      padding: "16px", textAlign: "left", cursor: "pointer",
+                      border: selected?.id === illness.id ? "1px solid var(--primary-light)" : "1px solid var(--glass-border)",
+                      background: selected?.id === illness.id ? "rgba(0, 180, 216, 0.1)" : "var(--glass-bg)",
+                      width: "100%", display: "block",
+                    }}
+                  >
+                    <div style={{ fontSize: "24px", marginBottom: "8px" }}>{categoryIcons[illness.category] || "📋"}</div>
+                    <h3 style={{ fontSize: "14px", marginBottom: "6px", color: "var(--text-primary)" }}>{illness.name}</h3>
+                    <p style={{ fontSize: "11px", color: "var(--primary-light)", fontWeight: 600 }}>
+                      {illness.firstAids.length} steps →
+                    </p>
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
+
+              {/* Bottom Sheet Modal */}
+              {selected && (
+                <div
+                  style={{
+                    position: "fixed", bottom: 0, left: 0, right: 0, top: 0,
+                    background: "rgba(0,0,0,0.6)", zIndex: 200,
+                    display: "flex", alignItems: "flex-end",
+                  }}
+                  onClick={() => setSelected(null)}
+                >
+                  <div
+                    style={{
+                      background: "var(--bg-2)", borderTop: "1px solid var(--glass-border)",
+                      borderRadius: "24px 24px 0 0", padding: "24px", width: "100%",
+                      maxHeight: "80vh", overflowY: "auto",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Handle bar */}
+                    <div style={{ width: "40px", height: "4px", background: "var(--glass-border)", borderRadius: "2px", margin: "0 auto 20px" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                      <h2 style={{ fontSize: "20px" }}>{selected.name}</h2>
+                      <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "24px", padding: "4px 8px" }}>✕</button>
+                    </div>
+                    <p style={{ fontSize: "14px", color: "var(--text-muted)", marginBottom: "24px", lineHeight: 1.6 }}>{selected.description}</p>
+                    <h4 style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>
+                      First Aid Steps
+                    </h4>
+                    {selected.firstAids.sort((a, b) => a.step - b.step).map((fa) => (
+                      <div key={fa.step} className="step-item">
+                        <div className="step-number">{fa.step}</div>
+                        <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-secondary)" }}>{fa.instruction}</p>
+                      </div>
+                    ))}
+                    <div style={{ marginTop: "20px", padding: "12px", background: "rgba(239, 71, 111, 0.05)", border: "1px solid rgba(239, 71, 111, 0.15)", borderRadius: "10px" }}>
+                      <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.6 }}>
+                        ⚠️ Guidance only. Always seek professional medical help for serious conditions.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
+
+      <style>{`
+        .first-aid-desktop { display: block; }
+        .first-aid-mobile  { display: none; }
+        @media (max-width: 768px) {
+          .first-aid-desktop { display: none; }
+          .first-aid-mobile  { display: block; }
+        }
+      `}</style>
     </div>
   );
 }
+
+
