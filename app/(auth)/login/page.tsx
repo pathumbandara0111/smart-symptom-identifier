@@ -28,7 +28,7 @@ export default function LoginPage() {
         toast.error(result.error);
       } else {
         toast.success("Welcome back!");
-        router.push("/symptom-checker");
+        router.push("/dashboard");
         router.refresh();
       }
     } catch {
