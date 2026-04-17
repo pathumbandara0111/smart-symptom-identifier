@@ -1,6 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const apiKey = process.env.GEMINI_API_KEY?.trim();
+if (!apiKey) {
+  console.error("❌ ERROR: GEMINI_API_KEY is not defined in environment variables!");
+} else {
+  console.log(`✅ GEMINI_API_KEY loaded (Length: ${apiKey.length}, Starts with: ${apiKey.substring(0, 4)}...)`);
+}
+const genAI = new GoogleGenerativeAI(apiKey || "");
 
 export const MEDICAL_SYSTEM_PROMPT = `
 You are a compassionate and knowledgeable medical information assistant in the "Smart Symptom Identifier" app.

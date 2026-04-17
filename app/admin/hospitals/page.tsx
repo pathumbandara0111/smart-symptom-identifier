@@ -22,7 +22,7 @@ export default function AdminHospitalsPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const router = useRouter();
-  
+
   const [formData, setFormData] = useState({ name: "", address: "", lat: "", lng: "", phone: "", type: "General" });
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export default function AdminHospitalsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      
+
       setHospitals(hospitals.map(h => h.id === editingId ? data.hospital : h));
       setEditingId(null);
       setFormData({ name: "", address: "", lat: "", lng: "", phone: "", type: "General" });
@@ -137,13 +137,13 @@ export default function AdminHospitalsPage() {
             </Link>
             <h1 className="page-title" style={{ fontSize: "28px", marginBottom: "4px" }}>Manage Hospitals</h1>
           </div>
-          <button 
+          <button
             onClick={() => {
               setIsAdding(!isAdding);
               setEditingId(null);
               if (!isAdding) setFormData({ name: "", address: "", lat: "", lng: "", phone: "", type: "General" });
-            }} 
-            className={isAdding ? "btn-secondary" : "btn-primary"} 
+            }}
+            className={isAdding ? "btn-secondary" : "btn-primary"}
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
           >
             {isAdding ? "Cancel" : <><Plus size={18} /> Add Hospital</>}
@@ -161,11 +161,11 @@ export default function AdminHospitalsPage() {
             <form onSubmit={editingId ? handleUpdate : handleAdd} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
               <div>
                 <label className="form-label">Hospital Name</label>
-                <input required className="form-input" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="General Hospital Colombo" />
+                <input required className="form-input" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="General Hospital Colombo" />
               </div>
               <div>
                 <label className="form-label">Type</label>
-                <select required className="form-input" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})}>
+                <select required className="form-input" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
                   <option value="General">General</option>
                   <option value="Private">Private</option>
                   <option value="Specialized">Specialized</option>
@@ -174,19 +174,19 @@ export default function AdminHospitalsPage() {
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label className="form-label">Address</label>
-                <input required className="form-input" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} placeholder="Regent St, Colombo 01000" />
+                <input required className="form-input" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} placeholder="Regent St, Colombo 01000" />
               </div>
               <div>
                 <label className="form-label">Latitude</label>
-                <input required type="number" step="any" className="form-input" value={formData.lat} onChange={(e) => setFormData({...formData, lat: e.target.value})} placeholder="6.9271" />
+                <input required type="number" step="any" className="form-input" value={formData.lat} onChange={(e) => setFormData({ ...formData, lat: e.target.value })} placeholder="6.9271" />
               </div>
               <div>
                 <label className="form-label">Longitude</label>
-                <input required type="number" step="any" className="form-input" value={formData.lng} onChange={(e) => setFormData({...formData, lng: e.target.value})} placeholder="79.8612" />
+                <input required type="number" step="any" className="form-input" value={formData.lng} onChange={(e) => setFormData({ ...formData, lng: e.target.value })} placeholder="79.8612" />
               </div>
               <div>
                 <label className="form-label">Phone Number</label>
-                <input required className="form-input" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="0112691111" />
+                <input required className="form-input" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="0112691111" />
               </div>
               <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end", gap: "12px" }}>
                 <button type="button" onClick={() => { setIsAdding(false); setEditingId(null); }} className="btn-secondary">Cancel</button>
@@ -212,14 +212,14 @@ export default function AdminHospitalsPage() {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <button 
+                  <button
                     onClick={() => startEdit(h)}
                     style={{ background: "rgba(255, 209, 102, 0.1)", border: "none", padding: "6px", borderRadius: "6px", color: "var(--warning)", cursor: "pointer" }}
                     aria-label="Edit"
                   >
                     <Edit2 size={16} />
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDelete(h.id)}
                     style={{ background: "rgba(239, 71, 111, 0.1)", border: "none", padding: "6px", borderRadius: "6px", color: "#EF476F", cursor: "pointer" }}
                     aria-label="Delete"
