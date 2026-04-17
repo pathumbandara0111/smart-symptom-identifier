@@ -43,7 +43,7 @@ export default function RegisterPage() {
 
       // Auto sign in
       await signIn("credentials", { email, password, redirect: false });
-      router.push("/symptom-checker");
+      router.push("/dashboard");
     } catch (err: any) {
       toast.error(err.message || "Registration failed.");
     } finally {

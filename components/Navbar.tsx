@@ -9,9 +9,9 @@ import {
   MapPin,
   Phone,
   BookOpen,
-  History,
   LogOut,
   User,
+  LayoutDashboard,
   Menu,
   X,
   Shield,
@@ -56,9 +56,9 @@ export function Navbar() {
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {session ? (
             <>
-              <Link href="/history" className="nav-link" style={{ display: "flex" }}>
-                <History size={15} />
-                <span className="hidden-mobile">History</span>
+              <Link href="/dashboard" className="nav-link" style={{ display: "flex" }}>
+                <LayoutDashboard size={15} />
+                <span className="hidden-mobile">Dashboard</span>
               </Link>
               {(session.user as any)?.role === "ADMIN" && (
                 <Link href="/admin" className="nav-link" style={{ display: "flex" }}>
