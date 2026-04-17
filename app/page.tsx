@@ -250,7 +250,7 @@ export default function HomePage() {
         }}
       >
         <p>
-          Smart Symptom Identifier — ITBNM-2211-0139 & ITBNM-2211-0111 | Horizon Campus FIT
+          Smart Symptom Identifier — ITBNM-2211-0139 & ITBNM-2211-0111 | Horizon Campus
         </p>
         <p style={{ marginTop: "8px", opacity: 0.6 }}>
           ⚠️ Not a substitute for professional medical advice. Always consult a qualified doctor.
