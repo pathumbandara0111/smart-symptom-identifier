@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body>
+      <body suppressHydrationWarning>
         <Providers>
           <Navbar />
           <main>{children}</main>
