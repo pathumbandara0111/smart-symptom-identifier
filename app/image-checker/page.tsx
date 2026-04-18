@@ -47,6 +47,31 @@ export default function ImageCheckerPage() {
     setResult(null);
   };
 
+  /**
+   * Helper to resize image to 224x224 (required by MobileNetV2)
+   * This drastically reduces payload size for Ngrok/Kaggle.
+   */
+  const resizeImage = (file: File): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new (window as any).Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 224;
+          canvas.height = 224;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, 224, 224);
+          canvas.toBlob((blob) => {
+            resolve(blob as Blob);
+          }, "image/jpeg", 0.8);
+        };
+      };
+    });
+  };
+
   async function handleAnalyze() {
     if (!file) {
       toast.error("Please upload an image first.");
@@ -57,8 +82,9 @@ export default function ImageCheckerPage() {
     setResult(null);
 
     try {
+      const resizedBlob = await resizeImage(file);
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("image", resizedBlob, "image.jpg");
       formData.append("description", description);
 
       const res = await fetch("/api/symptom/image", {

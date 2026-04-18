@@ -1,6 +1,8 @@
 import { analyzeTextSymptoms as analyzeWithGemini, analyzeImageSymptoms as analyzeImageWithGemini, MEDICAL_SYSTEM_PROMPT } from "./gemini";
+import http from "https";
 
-const KAGGLE_API_URL = process.env.NEXT_PUBLIC_KAGGLE_API_URL;
+const KAGGLE_API_URL = process.env.NEXT_PUBLIC_KAGGLE_API_URL?.replace(/\/$/, "");
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 export interface PredictionResponse {
   possibleIllnesses: string[];
@@ -13,45 +15,57 @@ export interface PredictionResponse {
   source: "kaggle" | "gemini";
 }
 
+// Map for Image Model codes (HAM10000)
+const IMAGE_CODE_MAP: Record<string, string> = {
+  "akiec": "Actinic keratoses",
+  "bcc": "Basal cell carcinoma",
+  "bkl": "Benign keratosis-like lesions",
+  "df": "Dermatofibroma",
+  "mel": "Melanoma",
+  "nv": "Melanocytic nevi (Mole)",
+  "vasc": "Vascular lesions"
+};
+
 /**
  * Smart Text Symptom Analyzer
- * Tries Kaggle (Custom Model) first, falls back to Gemini.
  */
 export async function identifySymptoms(symptoms: string, age?: string, gender?: string): Promise<PredictionResponse> {
   console.log("🔄 Starting AI Analysis...");
 
-  // 1. TRY KAGGLE (CUSTOM MODEL)
   if (KAGGLE_API_URL) {
     try {
-      console.log("🩺 Attempting to connect to Kaggle Custom Model (Ngrok)...");
+      console.log(`🩺 [TEXT] Connecting to Kaggle...`);
       const response = await fetch(`${KAGGLE_API_URL}/predict-text`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symptoms }),
-        signal: AbortSignal.timeout(5000), // 5 second timeout
       });
 
       if (response.ok) {
         const data = await response.json();
         if (data.status === "success" && data.illness) {
-          console.log(`✅ [BACKEND LOG]: Prediction successful using Custom Kaggle Model: ${data.illness}`);
+          console.log(`✅ [KAGGLE SUCCESS]: Predicted -> ${data.illness}`);
 
-          // Since our Kaggle model only returns the illness name, 
-          // we use a "Refined Gemini Call" to get the professional medical details (First Aid, etc.)
-          // This keeps our model as the 'Decision Maker'.
-          const refinedResult = await getRefinedMedicalDetails(data.illness, symptoms);
-          return { ...refinedResult, source: "kaggle" };
+          if (isGeminiActive()) {
+            try {
+              console.log("✨ [GEMINI]: Refining Kaggle diagnosis with medical details...");
+              const refined = await getRefinedMedicalDetails(data.illness, symptoms);
+              return { ...refined, source: "kaggle" };
+            }
+            catch (e: any) { console.warn("⚠️ Refinement skipped:", e.message); }
+          }
+          return getRawKaggleResponse(data.illness);
         }
       }
-    } catch (error) {
-      console.warn("⚠️ Kaggle API is offline or timed out. Falling back to Gemini...");
-    }
+    } catch (error: any) { console.warn("❌ Kaggle Text API offline."); }
   }
 
-  // 2. FALLBACK TO GEMINI
-  console.log("✨ [BACKEND LOG]: Using Backup Gemini API for analysis.");
-  const geminiResult = await analyzeWithGemini(symptoms, age, gender);
-  return { ...geminiResult, source: "gemini" };
+  if (isGeminiActive()) {
+    console.log("✨ [FALLBACK]: Using Gemini as Primary (Kaggle Offline)");
+    const geminiResult = await analyzeWithGemini(symptoms, age, gender);
+    return { ...geminiResult, source: "gemini" };
+  }
+  throw new Error("AI services unavailable.");
 }
 
 /**
@@ -60,69 +74,102 @@ export async function identifySymptoms(symptoms: string, age?: string, gender?: 
 export async function identifyImageSymptoms(imageBase64: string, mimeType: string, description?: string): Promise<PredictionResponse> {
   if (KAGGLE_API_URL) {
     try {
-      console.log("📸 Attempting to connect to Kaggle Image Model...");
-      const response = await fetch(`${KAGGLE_API_URL}/predict-image`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: imageBase64 }),
-        signal: AbortSignal.timeout(10000),
+      console.log(`📸 [IMAGE] Sending to Kaggle (${Math.round(imageBase64.length / 1024)} KB)...`);
+
+      const result = await new Promise<any>((resolve, reject) => {
+        const url = new URL(`${KAGGLE_API_URL}/predict-image`);
+        const body = JSON.stringify({ image: imageBase64 });
+
+        const req = http.request({
+          hostname: url.hostname,
+          path: url.pathname,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(body),
+          },
+          timeout: 45000,
+        }, (res) => {
+          let data = "";
+          res.on("data", (chunk) => data += chunk);
+          res.on("end", () => {
+            try { resolve(JSON.parse(data)); }
+            catch (e) { reject(new Error("Invalid JSON from Kaggle")); }
+          });
+        });
+
+        req.on("error", (e) => reject(e));
+        req.on("timeout", () => { req.destroy(); reject(new Error("Connection Timeout")); });
+        req.write(body);
+        req.end();
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.status === "success") {
-          console.log(`✅ [BACKEND LOG]: Image Analysis successful using Custom Model: ${data.condition}`);
-          const refinedResult = await getRefinedMedicalDetails(data.condition, description || "Visible skin symptom");
-          return { ...refinedResult, source: "kaggle" };
+      if (result.status === "success" && result.condition) {
+        const fullConditionName = IMAGE_CODE_MAP[result.condition] || result.condition;
+        console.log(`✅ [KAGGLE SUCCESS]: Predicted -> ${fullConditionName}`);
+
+        if (isGeminiActive()) {
+          try {
+            console.log("✨ [GEMINI]: Refining Image diagnosis with medical details...");
+            const refined = await getRefinedMedicalDetails(fullConditionName, description || "Visual condition");
+            return { ...refined, source: "kaggle" };
+          }
+          catch (e: any) { console.warn("⚠️ Image Refinement skipped:", e.message); }
         }
+        return getRawKaggleResponse(fullConditionName);
       }
-    } catch (error) {
-      console.warn("⚠️ Kaggle Image API offline. Falling back to Gemini...");
+    } catch (error: any) {
+      console.error("❌ Kaggle Image API Final Error:", error.message);
     }
   }
 
-  const geminiResult = await analyzeImageWithGemini(imageBase64, mimeType, description);
-  return { ...geminiResult, source: "gemini" };
+  if (isGeminiActive()) {
+    console.log("✨ [FALLBACK]: Using Gemini Image Primary (Kaggle Offline)");
+    const geminiResult = await analyzeImageWithGemini(imageBase64, mimeType, description);
+    return { ...geminiResult, source: "gemini" };
+  }
+
+  throw new Error("Both Kaggle and Gemini Image AI are unavailable.");
 }
 
-/**
- * Uses Gemini as a 'Medical Encyclopedia' to provide details for a specific illness
- */
+function isGeminiActive() {
+  return GEMINI_API_KEY && !GEMINI_API_KEY.startsWith("#") && GEMINI_API_KEY.length > 10;
+}
+
+function getRawKaggleResponse(illness: string): PredictionResponse {
+  return {
+    possibleIllnesses: [illness], severity: "moderate",
+    firstAidSteps: ["Please consult a doctor for professional advice."],
+    specialistType: "Specialist", emergencyRequired: false,
+    additionalInfo: "Custom AI Analysis Complete.",
+    disclaimer: "⚠️ Not medical advice.", source: "kaggle"
+  };
+}
+
 async function getRefinedMedicalDetails(illness: string, originalSymptoms: string) {
-  try {
-    const { GoogleGenerativeAI } = require("@google/generative-ai");
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+  const { GoogleGenerativeAI } = require("@google/generative-ai");
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", systemInstruction: MEDICAL_SYSTEM_PROMPT });
 
-    // Using the same model name as your gemini.ts
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      systemInstruction: MEDICAL_SYSTEM_PROMPT
-    });
+  const prompt = `
+    Our custom model identified this condition: "${illness}"
+    User symptoms/context: "${originalSymptoms}"
+    
+    Translate "${illness}" to its full medical name if it is a code (like nv, mel, bcc).
+    Then generate a professional medical response in EXACT JSON format:
+    {
+      "possibleIllnesses": ["Full Name of ${illness}"],
+      "severity": "mild/moderate/severe/critical",
+      "firstAidSteps": ["Step 1", "Step 2", "Step 3"],
+      "specialistType": "Type of doctor",
+      "emergencyRequired": true/false,
+      "additionalInfo": "Brief explanation of the condition",
+      "disclaimer": "⚠️ This is not a substitute for professional medical advice."
+    }
+  `;
 
-    const prompt = `
-      The custom AI model has identified this condition: "${illness}" 
-      based on these symptoms: "${originalSymptoms}".
-      
-      Provide professional medical details for this SPECIFIC condition ONLY.
-    `;
-
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) throw new Error("Invalid JSON from refinement");
-    return JSON.parse(jsonMatch[0]);
-  } catch (error) {
-    console.error("❌ [REFINEMENT ERROR]:", error);
-    // Return a basic structure if refinement fails so we still show the Kaggle prediction
-    return {
-      possibleIllnesses: [illness],
-      severity: "moderate",
-      firstAidSteps: ["Consult a doctor for professional advice."],
-      specialistType: "General Physician",
-      emergencyRequired: false,
-      additionalInfo: "Custom model prediction successful, but details could not be generated.",
-      disclaimer: "⚠️ This is not a substitute for professional medical advice."
-    };
-  }
+  const result = await model.generateContent(prompt);
+  const match = result.response.text().match(/\{[\s\S]*\}/);
+  if (!match) throw new Error("Could not parse AI response");
+  return JSON.parse(match[0]);
 }
