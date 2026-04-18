@@ -34,7 +34,7 @@ export function Navbar() {
     <>
       <nav className="navbar">
         <Link href="/" className="nav-logo">
-          🩺 SymptomAI
+          🩺 SmartSymptom AI
         </Link>
 
         {/* Desktop Nav */}

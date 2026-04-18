@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { analyzeTextSymptoms } from "@/lib/gemini";
+import { identifySymptoms } from "@/lib/aiService";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 
@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get AI analysis from Gemini 2.5 Flash
-    const analysis = await analyzeTextSymptoms(symptoms, age, gender);
+    // Use Smart AI Service (Kaggle Model + Gemini Fallback)
+    const analysis = await identifySymptoms(symptoms, age, gender);
 
     // Try to save session if user is logged in
     try {
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
             data: {
               userId: user.id,
               symptomText: symptoms,
-              aiResponse: analysis,
+              aiResponse: analysis as any,
               severity: analysis.severity || "mild",
             },
           });

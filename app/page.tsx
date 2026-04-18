@@ -46,7 +46,7 @@ const features = [
 
 const stats = [
   { value: "20+", label: "Illnesses Covered" },
-  { value: "AI", label: "Gemini 2.5 Flash" },
+  { value: "AI", label: "SmartSymptom AI" },
   { value: "24/7", label: "Available Anytime" },
   { value: "Free", label: "No Cost to Use" },
 ];
@@ -78,7 +78,7 @@ export default function HomePage() {
           }}
         >
           <span style={{ color: "#06D6A0" }}>●</span>
-          Powered by Google Gemini 2.5 Flash AI
+          Powered by SmartSymptom AI Engine
         </div>
 
         <h1
