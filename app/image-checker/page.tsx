@@ -101,7 +101,7 @@ export default function ImageCheckerPage() {
           </div>
           <h1 className="page-title">Image Symptom Analyzer</h1>
           <p className="page-subtitle">
-            Upload a photo of a visible symptom (rash, wound, swelling, etc.) and our Gemini AI will analyze it.
+            Upload a photo of a visible symptom (rash, wound, swelling, etc.) and our SmartSymptom AI will analyze it.
           </p>
         </div>
 

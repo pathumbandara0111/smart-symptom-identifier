@@ -91,7 +91,7 @@ export default function SymptomCheckerPage() {
           </div>
           <h1 className="page-title">Symptom Checker</h1>
           <p className="page-subtitle">
-            Describe your symptoms below and our Gemini AI will analyze possible illnesses
+            Describe your symptoms below and our SmartSymptom AI will analyze possible illnesses
             and provide first-aid guidance.
           </p>
         </div>

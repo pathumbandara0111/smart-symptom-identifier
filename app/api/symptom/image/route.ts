@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { analyzeImageSymptoms } from "@/lib/gemini";
+import { identifyImageSymptoms } from "@/lib/aiService";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 
@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
     const bytes = await image.arrayBuffer();
     const base64 = Buffer.from(bytes).toString("base64");
 
-    // Get AI analysis
-    const analysis = await analyzeImageSymptoms(base64, image.type, description);
+    // Get AI analysis using Smart AI Service
+    const analysis = await identifyImageSymptoms(base64, image.type, description);
 
     // Save session if logged in
     try {
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
             data: {
               userId: user.id,
               symptomText: description || "Image analysis",
-              aiResponse: analysis,
+              aiResponse: analysis as any,
               severity: analysis.severity || "mild",
             },
           });
