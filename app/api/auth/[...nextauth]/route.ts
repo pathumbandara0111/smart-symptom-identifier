@@ -20,7 +20,7 @@ const handler = NextAuth({
           const { getAdminAuth } = await import("@/lib/firebase-admin");
           const adminAuth = getAdminAuth();
           const decodedToken = await adminAuth.verifyIdToken(credentials.idToken);
-          
+
           if (!decodedToken.email) {
             throw new Error("No email found in token");
           }
@@ -100,7 +100,7 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
       }
