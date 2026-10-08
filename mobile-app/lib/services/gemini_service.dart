@@ -48,7 +48,7 @@ Respond ONLY with valid JSON matching this exact format:
 
   GenerativeModel _model() {
     return GenerativeModel(
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.8-flash',
       apiKey: AppConfig.geminiKey,
       systemInstruction: Content.text(_medicalSystemPrompt),
     );
