@@ -1,4 +1,4 @@
-import { analyzeTextSymptoms as analyzeWithGemini, analyzeImageSymptoms as analyzeImageWithGemini, MEDICAL_SYSTEM_PROMPT } from "./gemini";
+import { analyzeTextSymptoms as analyzeWithGemini, analyzeImageSymptoms as analyzeImageWithGemini, MEDICAL_SYSTEM_PROMPT, GEMINI_MODEL } from "./gemini";
 import http from "https";
 
 const KAGGLE_API_URL = process.env.NEXT_PUBLIC_KAGGLE_API_URL?.replace(/\/$/, "");
@@ -35,11 +35,15 @@ export async function identifySymptoms(symptoms: string, age?: string, gender?: 
   if (KAGGLE_API_URL) {
     try {
       console.log(`🩺 [TEXT] Connecting to Kaggle...`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s fallback timeout
       const response = await fetch(`${KAGGLE_API_URL}/predict-text`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symptoms }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
@@ -88,7 +92,7 @@ export async function identifyImageSymptoms(imageBase64: string, mimeType: strin
             "Content-Type": "application/json",
             "Content-Length": Buffer.byteLength(body),
           },
-          timeout: 45000,
+          timeout: 20000,
         }, (res) => {
           let data = "";
           res.on("data", (chunk) => data += chunk);
@@ -149,7 +153,7 @@ function getRawKaggleResponse(illness: string): PredictionResponse {
 async function getRefinedMedicalDetails(illness: string, originalSymptoms: string) {
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", systemInstruction: MEDICAL_SYSTEM_PROMPT });
+  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL, systemInstruction: MEDICAL_SYSTEM_PROMPT });
 
   const prompt = `
     Our custom model identified this condition: "${illness}"

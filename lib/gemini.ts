@@ -6,6 +6,7 @@ if (!apiKey) {
 } else {
   console.log(`✅ GEMINI_API_KEY loaded (Length: ${apiKey.length}, Starts with: ${apiKey.substring(0, 4)}...)`);
 }
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
 const genAI = new GoogleGenerativeAI(apiKey || "");
 
 export const MEDICAL_SYSTEM_PROMPT = `
@@ -54,7 +55,7 @@ export async function analyzeTextSymptoms(
   gender?: string
 ) {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: GEMINI_MODEL,
     systemInstruction: MEDICAL_SYSTEM_PROMPT,
   });
 
@@ -85,7 +86,7 @@ export async function analyzeImageSymptoms(
   description?: string
 ) {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: GEMINI_MODEL,
     systemInstruction: MEDICAL_SYSTEM_PROMPT,
   });
 
