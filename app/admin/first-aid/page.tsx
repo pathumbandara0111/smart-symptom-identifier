@@ -57,7 +57,7 @@ export default function AdminFirstAidPage() {
       const res = await fetch("/api/admin/first-aid");
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setGuides(data.illnesses);
+      setGuides(data.illnesses || []);
     } catch (err: any) {
       toast.error(err.message || "Failed to load guides");
     } finally {
@@ -98,10 +98,10 @@ export default function AdminFirstAidPage() {
 
       if (editingId) {
         setGuides(guides.map(g => g.id === editingId ? data.illness : g));
-        toast.success("Guide updated");
+        toast.success("Guide updated successfully");
       } else {
-        setGuides([...guides, data.illness]);
-        toast.success("New guide added");
+        setGuides([data.illness, ...guides]);
+        toast.success("New guide added successfully");
       }
 
       setIsAdding(false);
@@ -113,12 +113,12 @@ export default function AdminFirstAidPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this guide?")) return;
+    if (!confirm("Delete this guide and all its instructions?")) return;
     try {
       const res = await fetch(`/api/admin/first-aid?id=${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
       setGuides(guides.filter((g) => g.id !== id));
-      toast.success("Guide removed");
+      toast.success("Guide removed successfully");
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -130,10 +130,9 @@ export default function AdminFirstAidPage() {
       name: guide.name,
       description: guide.description,
       category: guide.category,
-      steps: guide.firstAids.map(s => s.instruction)
+      steps: guide.firstAids.sort((a,b) => a.step - b.step).map(s => s.instruction)
     });
     setIsAdding(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   if (loading) {
@@ -146,9 +145,9 @@ export default function AdminFirstAidPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
           <div>
             <Link href="/admin" style={{ color: "var(--text-muted)", fontSize: "14px", textDecoration: "none", marginBottom: "8px", display: "inline-block" }}>
-              ← Back to Dashboard
+              ← Back to Admin Panel
             </Link>
-            <h1 className="page-title" style={{ fontSize: "28px", marginBottom: "4px" }}>Manage First Aid Guides</h1>
+            <h1 className="page-title" style={{ fontSize: "28px", marginBottom: "4px" }}>First Aid Management</h1>
           </div>
           <button 
             onClick={() => {
@@ -159,148 +158,141 @@ export default function AdminFirstAidPage() {
             className={isAdding ? "btn-secondary" : "btn-primary"} 
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
           >
-            {isAdding ? "Cancel" : <><Plus size={18} /> Add New Guide</>}
+            {isAdding ? "Cancel" : <><Plus size={18} /> Add Guide</>}
           </button>
         </div>
 
+        {/* Add / Edit Form matching Screenshot */}
         {(isAdding || editingId) && (
-          <div className="glass-card" style={{ padding: "24px", marginBottom: "32px", border: `1px solid ${editingId ? 'var(--warning)' : 'var(--primary-light)'}` }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+          <div className="glass-card" style={{ padding: "24px", marginBottom: "32px", border: `1px solid ${editingId ? 'var(--moderate)' : 'var(--primary-light)'}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h3 style={{ fontSize: "18px" }}>{editingId ? "Edit First Aid Guide" : "Create New First Aid Guide"}</h3>
               <button onClick={() => { setIsAdding(false); setEditingId(null); }} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
                 <X size={20} />
               </button>
             </div>
-            
-            <form onSubmit={handleSubmit}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "24px" }}>
-                <div style={{ gridColumn: "1 / -1" }}>
-                  <label className="form-label">Guide Title (Illness Name)</label>
-                  <input required className="form-input" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g., Minor Burns, Heat Stroke" />
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "16px" }}>
+                <div>
+                  <label className="form-label">Condition Name</label>
+                  <input required className="form-input" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Heat Stroke" />
                 </div>
                 <div>
                   <label className="form-label">Category</label>
-                  <select required className="form-input" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>
+                  <select className="form-input" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>
                     <option value="general">General</option>
+                    <option value="injuries">Injuries</option>
                     <option value="respiratory">Respiratory</option>
                     <option value="digestive">Digestive</option>
-                    <option value="injuries">Injuries</option>
                     <option value="allergies">Allergies</option>
                     <option value="emergency">Emergency</option>
                   </select>
                 </div>
-                <div style={{ gridColumn: "1 / -1" }}>
-                  <label className="form-label">Short Description</label>
-                  <textarea required className="form-input" style={{ minHeight: "80px" }} value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Describe this condition briefly..." />
-                </div>
               </div>
 
-              <div style={{ marginBottom: "24px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                  <label className="form-label" style={{ marginBottom: 0 }}>Step-by-Step Instructions</label>
-                  <button type="button" onClick={addStepField} className="text-[var(--primary-light)] flex items-center gap-1 text-sm font-semibold">
-                    <Plus size={14} /> Add Step
+              <div>
+                <label className="form-label">Short Description</label>
+                <textarea required className="form-input" rows={2} value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Key indicators and overview..." />
+              </div>
+
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <label className="form-label" style={{ margin: 0 }}>Action Steps (Numbered sequentially)</label>
+                  <button type="button" onClick={addStepField} style={{ background: "none", border: "none", color: "var(--primary-light)", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
+                    + Add Step
                   </button>
                 </div>
-                
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {formData.steps.map((step, index) => (
-                    <div key={index} style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-                      <div style={{ background: "rgba(255,255,255,0.1)", width: "32px", height: "32px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", flexShrink: 0, marginTop: "4px" }}>
-                        {index + 1}
-                      </div>
-                      <textarea 
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {formData.steps.map((st, i) => (
+                    <div key={i} style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                      <span style={{ fontSize: "12px", color: "var(--text-muted)", minWidth: "20px" }}>#{i + 1}</span>
+                      <input 
                         required 
                         className="form-input" 
-                        style={{ minHeight: "60px" }} 
-                        value={step} 
-                        onChange={(e) => handleStepChange(index, e.target.value)}
-                        placeholder={`Instruction for step ${index + 1}...`}
+                        value={st} 
+                        onChange={(e) => handleStepChange(i, e.target.value)} 
+                        placeholder={`Step ${i + 1} instruction...`} 
                       />
-                      <button 
-                        type="button" 
-                        onClick={() => removeStepField(index)}
-                        style={{ background: "rgba(239, 71, 111, 0.1)", border: "none", padding: "8px", borderRadius: "8px", color: "#EF476F", cursor: "pointer", marginTop: "4px" }}
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {formData.steps.length > 1 && (
+                        <button type="button" onClick={() => removeStepField(i)} style={{ background: "none", border: "none", color: "#EF476F", cursor: "pointer", padding: "4px" }}>
+                          <X size={16} />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "12px" }}>
                 <button type="button" onClick={() => { setIsAdding(false); setEditingId(null); }} className="btn-secondary">Cancel</button>
-                <button type="submit" className="btn-primary" style={{ background: editingId ? 'var(--warning)' : 'var(--primary-light)', borderColor: editingId ? 'var(--warning)' : 'var(--primary-light)' }}>
-                  {editingId ? "Update Guide" : "Create Guide"}
+                <button type="submit" className="btn-primary" style={{ background: editingId ? 'var(--moderate)' : 'var(--primary-light)', color: editingId ? '#000' : '#fff' }}>
+                  {editingId ? "Update Guide" : "Publish Guide"}
                 </button>
               </div>
             </form>
           </div>
         )}
 
+        {/* Guides List matching Screenshot */}
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {guides.map((g) => (
-            <div key={g.id} className="glass-card" style={{ padding: 0, overflow: "hidden", border: editingId === g.id ? '2px solid var(--warning)' : '1px solid var(--glass-border)' }}>
-              <div 
-                style={{ padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", background: expandedId === g.id ? "rgba(255,255,255,0.03)" : "transparent" }}
-                onClick={() => setExpandedId(expandedId === g.id ? null : g.id)}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <div style={{ background: "rgba(255, 209, 102, 0.1)", padding: "10px", borderRadius: "10px", color: "var(--warning)" }}>
-                    <BookOpen size={24} />
-                  </div>
+          {guides.map((g) => {
+            const isExpanded = expandedId === g.id;
+            return (
+              <div key={g.id} className="glass-card" style={{ padding: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
                   <div>
-                    <h3 style={{ fontSize: "18px", fontWeight: 700 }}>{g.name}</h3>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <span style={{ fontSize: "12px", background: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "10px", color: "var(--text-muted)", textTransform: "capitalize" }}>
+                      <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-primary)" }}>{g.name}</h3>
+                      <span style={{ fontSize: "11px", background: "rgba(255, 209, 102, 0.15)", color: "var(--moderate)", padding: "2px 8px", borderRadius: "4px", textTransform: "capitalize" }}>
                         {g.category}
                       </span>
-                      <span style={{ fontSize: "12px", color: "var(--primary-light)" }}>
-                        {g.firstAids.length} Steps
-                      </span>
                     </div>
+                    <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "4px" }}>{g.description}</p>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <button 
+                      onClick={() => setExpandedId(isExpanded ? null : g.id)}
+                      className="btn-secondary"
+                      style={{ padding: "6px 12px", fontSize: "12px", gap: "4px" }}
+                    >
+                      {g.firstAids.length} Steps {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
+                    <button 
+                      onClick={() => startEdit(g)}
+                      style={{ background: "rgba(255, 209, 102, 0.1)", border: "none", padding: "6px", borderRadius: "6px", color: "var(--moderate)", cursor: "pointer" }}
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(g.id)}
+                      style={{ background: "rgba(239, 71, 111, 0.1)", border: "none", padding: "6px", borderRadius: "6px", color: "#EF476F", cursor: "pointer" }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); startEdit(g); }}
-                    style={{ background: "rgba(255, 209, 102, 0.1)", border: "none", padding: "8px", borderRadius: "8px", color: "var(--warning)", cursor: "pointer" }}
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); handleDelete(g.id); }}
-                    style={{ background: "rgba(239, 71, 111, 0.1)", border: "none", padding: "8px", borderRadius: "8px", color: "#EF476F", cursor: "pointer" }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                  {expandedId === g.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </div>
-              </div>
-              
-              {expandedId === g.id && (
-                <div style={{ padding: "0 20px 20px 20px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                  <p style={{ margin: "16px 0", color: "var(--text-muted)", fontSize: "14px", lineHeight: "1.6" }}>{g.description}</p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    {g.firstAids.map((s) => (
-                      <div key={s.id} style={{ display: "flex", gap: "12px", fontSize: "13px" }}>
-                        <span style={{ color: "var(--primary-light)", fontWeight: 700 }}>Step {s.step}:</span>
-                        <span style={{ color: "var(--text-light)" }}>{s.instruction}</span>
+
+                {isExpanded && (
+                  <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px solid var(--glass-border)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {g.firstAids.sort((a,b) => a.step - b.step).map((st) => (
+                      <div key={st.id} style={{ display: "flex", gap: "10px", fontSize: "13px" }}>
+                        <span style={{ color: "var(--primary-light)", fontWeight: 700 }}>Step {st.step}:</span>
+                        <span style={{ color: "var(--text-light)" }}>{st.instruction}</span>
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
           {guides.length === 0 && (
-            <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-muted)" }}>
-              <BookOpen size={48} style={{ opacity: 0.2, marginBottom: "16px" }} />
-              <p>No first aid guides created yet.</p>
+            <div className="glass-card" style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+              No first aid guides found. Click &quot;Add Guide&quot; to publish one.
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

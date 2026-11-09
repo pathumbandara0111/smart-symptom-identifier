@@ -30,11 +30,9 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Sign in with Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await userCredential.user.getIdToken();
 
-      // 2. Sync with NextAuth
       const result = await nextAuthSignIn("firebase", {
         idToken,
         redirect: false,
@@ -48,7 +46,7 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (error: any) {
-      toast.error(error.message || "Login failed. Please try again.");
+      toast.error(error.message || "Login failed. Please check credentials.");
     } finally {
       setLoading(false);
     }
@@ -57,11 +55,9 @@ export default function LoginPage() {
   async function handleGoogleLogin() {
     setGoogleLoading(true);
     try {
-      // 1. Sign in with Firebase Google Provider
       const result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken();
 
-      // 2. Sync with NextAuth
       const response = await nextAuthSignIn("firebase", {
         idToken,
         redirect: false,
@@ -83,12 +79,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="page-container" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+    <div className="page-container" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "85vh" }}>
       <div style={{ width: "100%", maxWidth: "420px", padding: "0 24px" }}>
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <div style={{ fontSize: "48px", marginBottom: "16px" }}>🩺</div>
+        <div style={{ textAlign: "center", marginBottom: "36px" }}>
+          <div style={{ fontSize: "44px", marginBottom: "12px" }}>🩺</div>
           <h1 style={{ fontSize: "28px", fontFamily: "Outfit", fontWeight: 800, marginBottom: "8px" }}>Welcome Back</h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "15px" }}>Sign in to your SymptomAI account</p>
+          <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Sign in to your SmartSymptom AI account</p>
         </div>
 
         <div className="glass-card" style={{ padding: "36px" }}>
@@ -99,47 +95,54 @@ export default function LoginPage() {
             className="btn-secondary"
             style={{ width: "100%", justifyContent: "center", marginBottom: "24px", gap: "10px", background: "rgba(255,255,255,0.05)" }}
           >
-            {googleLoading ? <Loader2 className="animate-spin" size={20} /> : <GoogleIcon />}
-            Sign in with Google
+            {googleLoading ? <Loader2 size={18} className="animate-spin" /> : <GoogleIcon />}
+            Continue with Google
           </button>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" }}>
-            <div style={{ flex: 1, height: "1px", background: "var(--glass-border)" }} />
-            <span style={{ fontSize: "12px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>or email</span>
-            <div style={{ flex: 1, height: "1px", background: "var(--glass-border)" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
+            <div style={{ flex: 1, height: "1px", background: "var(--glass-border)" }}></div>
+            <span style={{ fontSize: "12px", color: "var(--text-muted)", textTransform: "uppercase" }}>Or with email</span>
+            <div style={{ flex: 1, height: "1px", background: "var(--glass-border)" }}></div>
           </div>
 
-          <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: "20px" }}>
+          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div>
               <label className="form-label">Email Address</label>
               <input
                 type="email"
+                required
                 className="form-input"
-                placeholder="your@email.com"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
               />
             </div>
 
-            <div style={{ marginBottom: "28px" }}>
+            <div>
               <label className="form-label">Password</label>
               <div style={{ position: "relative" }}>
                 <input
                   type={showPass ? "text" : "password"}
+                  required
                   className="form-input"
-                  placeholder="Your password"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                  style={{ paddingRight: "48px" }}
+                  style={{ paddingRight: "44px" }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+                  style={{
+                    position: "absolute",
+                    right: "14px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    color: "var(--text-muted)",
+                    cursor: "pointer",
+                  }}
                 >
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -148,25 +151,21 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="btn-primary"
               disabled={loading}
-              style={{ width: "100%", justifyContent: "center", fontSize: "16px", padding: "14px" }}
+              className="btn-primary"
+              style={{ width: "100%", justifyContent: "center", marginTop: "8px", padding: "14px" }}
             >
-              {loading ? <><Loader2 size={18} style={{ animation: "spin 0.8s linear infinite" }} /> Signing in...</> : "Sign In"}
+              {loading ? <Loader2 size={18} className="animate-spin" /> : "Sign In"}
             </button>
           </form>
 
-          <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--glass-border)" }}>
-            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
-              Don't have an account?{" "}
-              <Link href="/register" style={{ color: "var(--primary-light)", fontWeight: 600 }}>Create one free</Link>
-            </p>
-          </div>
+          <p style={{ textAlign: "center", marginTop: "24px", fontSize: "14px", color: "var(--text-muted)" }}>
+            Don&apos;t have an account?{" "}
+            <Link href="/register" style={{ color: "var(--primary-light)", textDecoration: "none", fontWeight: 600 }}>
+              Create an account
+            </Link>
+          </p>
         </div>
-
-        <p style={{ textAlign: "center", marginTop: "24px", fontSize: "12px", color: "var(--text-muted)", opacity: 0.7 }}>
-          ⚠️ SymptomAI is for informational purposes only.
-        </p>
       </div>
     </div>
   );

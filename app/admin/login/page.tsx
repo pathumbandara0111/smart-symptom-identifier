@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, User, Loader2, ShieldCheck } from "lucide-react";
+import { Lock, User, Loader2, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("");
@@ -38,74 +39,65 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="page-container" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "linear-gradient(135deg, #020b18 0%, #03045e 100%)" }}>
+    <div className="page-container" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "85vh" }}>
       <div style={{ width: "100%", maxWidth: "400px", padding: "0 24px" }}>
+        
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ 
-            width: "80px", 
-            height: "80px", 
-            background: "rgba(0, 180, 216, 0.1)", 
-            borderRadius: "24px", 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center", 
-            margin: "0 auto 20px",
-            border: "1px solid rgba(0, 180, 216, 0.3)",
-            color: "var(--primary-light)"
-          }}>
-            <ShieldCheck size={40} />
+          <div style={{ display: "inline-flex", padding: "16px", borderRadius: "20px", background: "rgba(239, 71, 111, 0.1)", color: "#EF476F", marginBottom: "16px" }}>
+            <ShieldAlert size={40} />
           </div>
-          <h1 style={{ fontSize: "28px", fontWeight: 800, color: "white", marginBottom: "8px" }}>Admin Portal</h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Authorized Personnel Only</p>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "8px" }}>Admin Portal</h1>
+          <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Sign in to manage SmartSymptom AI infrastructure</p>
         </div>
 
-        <div className="glass-card" style={{ padding: "32px" }}>
-          <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: "20px" }}>
-              <label className="form-label">Username</label>
-              <div style={{ position: "relative" }}>
-                <User style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} size={18} />
-                <input 
-                  required 
-                  className="form-input" 
-                  style={{ paddingLeft: "40px" }}
-                  placeholder="Enter username" 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
+        <div className="glass-card" style={{ padding: "32px", border: "1px solid rgba(239, 71, 111, 0.2)" }}>
+          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            
+            <div>
+              <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <User size={14} /> Username
+              </label>
+              <input 
+                type="text" 
+                required 
+                className="form-input" 
+                placeholder="admin"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
             </div>
 
-            <div style={{ marginBottom: "32px" }}>
-              <label className="form-label">Password</label>
-              <div style={{ position: "relative" }}>
-                <Lock style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} size={18} />
-                <input 
-                  required 
-                  type="password"
-                  className="form-input" 
-                  style={{ paddingLeft: "40px" }}
-                  placeholder="••••••••" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
+            <div>
+              <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Lock size={14} /> Password
+              </label>
+              <input 
+                type="password" 
+                required 
+                className="form-input" 
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
 
             <button 
               type="submit" 
-              className="btn-primary" 
               disabled={loading}
-              style={{ width: "100%", justifyContent: "center", padding: "14px" }}
+              className="btn-primary" 
+              style={{ width: "100%", justifyContent: "center", background: "linear-gradient(135deg, #EF476F, #c23152)", marginTop: "8px" }}
             >
-              {loading ? <><Loader2 size={18} className="animate-spin" /> Authenticating...</> : "Secure Login"}
+              {loading ? <Loader2 size={18} className="animate-spin" /> : "Authenticate"}
             </button>
           </form>
+
+          <div style={{ marginTop: "24px", textAlign: "center" }}>
+            <Link href="/" style={{ color: "var(--text-muted)", fontSize: "13px", textDecoration: "none" }}>
+              ← Return to Public Website
+            </Link>
+          </div>
         </div>
-        
-        <p style={{ textAlign: "center", marginTop: "32px", fontSize: "12px", color: "var(--text-muted)", opacity: 0.5 }}>
-          © 2025 SymptomAI Security System. All rights reserved.
-        </p>
+
       </div>
     </div>
   );

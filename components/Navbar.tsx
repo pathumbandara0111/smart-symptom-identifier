@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   Shield,
+  Clock,
 } from "lucide-react";
 
 const navItems = [
@@ -34,72 +35,88 @@ export function Navbar() {
     <>
       <nav className="navbar">
         <Link href="/" className="nav-logo">
-          🩺 SmartSymptom AI
+          <span>🩺</span> SmartSymptom AI
         </Link>
 
         {/* Desktop Nav */}
-        <ul className="nav-links">
+        <ul className="nav-links hidden md:flex">
           {navItems.map(({ href, label, icon: Icon }) => (
             <li key={href}>
               <Link
                 href={href}
                 className={`nav-link ${pathname === href ? "active" : ""}`}
+                style={href === "/emergency" ? { color: "#EF476F", fontWeight: 600 } : undefined}
               >
-                <Icon size={15} />
+                <Icon size={16} />
                 {label}
               </Link>
             </li>
           ))}
         </ul>
 
-        {/* Right Side - Desktop Auth */}
-        <div className="nav-auth-desktop" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        {/* Auth Buttons */}
+        <div className="flex items-center gap-2">
           {session ? (
-            <>
-              <Link href="/dashboard" className="nav-link" style={{ display: "flex" }}>
-                <LayoutDashboard size={15} />
-                <span className="hidden-mobile">Dashboard</span>
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                href="/history"
+                className="btn-secondary"
+                style={{ padding: "8px 14px", fontSize: "13px" }}
+              >
+                <Clock size={14} />
+                <span>History</span>
+              </Link>
+              <Link
+                href="/dashboard"
+                className="btn-secondary"
+                style={{ padding: "8px 14px", fontSize: "13px" }}
+              >
+                <LayoutDashboard size={14} />
+                <span>Dashboard</span>
               </Link>
               {(session.user as any)?.role === "ADMIN" && (
-                <Link href="/admin" className="nav-link" style={{ display: "flex" }}>
-                  <Shield size={15} />
-                  <span className="hidden-mobile">Admin</span>
+                <Link
+                  href="/admin"
+                  className="btn-secondary"
+                  style={{ padding: "8px 14px", fontSize: "13px", borderColor: "rgba(0, 207, 232, 0.4)", color: "var(--accent)" }}
+                >
+                  <Shield size={14} />
+                  <span>Admin</span>
                 </Link>
               )}
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="btn-secondary"
-                style={{ padding: "8px 14px", fontSize: "13px" }}
+                style={{ padding: "8px 14px", fontSize: "13px", borderColor: "rgba(239, 71, 111, 0.3)", color: "#EF476F" }}
               >
                 <LogOut size={14} />
-                <span className="hidden-mobile">Sign Out</span>
+                <span>Sign Out</span>
               </button>
-            </>
+            </div>
           ) : (
-            <>
+            <div className="hidden sm:flex items-center gap-2">
               <Link href="/login" className="btn-secondary" style={{ padding: "8px 16px", fontSize: "13px" }}>
                 Sign In
               </Link>
               <Link href="/register" className="btn-primary" style={{ padding: "8px 16px", fontSize: "13px" }}>
                 Get Started
               </Link>
-            </>
+            </div>
           )}
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden"
             style={{
-              display: "none",
               background: "none",
               border: "none",
               color: "var(--text-primary)",
               cursor: "pointer",
               padding: "8px",
             }}
-            className="mobile-menu-btn"
           >
-            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </nav>
@@ -114,12 +131,13 @@ export function Navbar() {
             right: 0,
             background: "rgba(2, 11, 24, 0.98)",
             backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
             borderBottom: "1px solid var(--glass-border)",
             zIndex: 99,
-            padding: "16px",
+            padding: "20px",
             display: "flex",
             flexDirection: "column",
-            gap: "8px",
+            gap: "10px",
           }}
         >
           {navItems.map(({ href, label, icon: Icon }) => (
@@ -128,33 +146,36 @@ export function Navbar() {
               href={href}
               className="nav-link"
               onClick={() => setMobileOpen(false)}
-              style={{ fontSize: "16px", padding: "14px 16px" }}
+              style={{ fontSize: "16px", padding: "12px 16px", color: href === "/emergency" ? "#EF476F" : undefined }}
             >
               <Icon size={18} />
               {label}
             </Link>
           ))}
-          <div style={{ borderTop: "1px solid var(--glass-border)", marginTop: "8px", paddingTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ borderTop: "1px solid var(--glass-border)", marginTop: "10px", paddingTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
             {session ? (
               <>
-                <Link href="/dashboard" className="nav-link" onClick={() => setMobileOpen(false)} style={{ fontSize: "16px", padding: "14px 16px" }}>
-                  <LayoutDashboard size={18} /> Dashboard
+                <Link href="/history" className="nav-link" onClick={() => setMobileOpen(false)} style={{ fontSize: "15px" }}>
+                  <Clock size={16} /> History
+                </Link>
+                <Link href="/dashboard" className="nav-link" onClick={() => setMobileOpen(false)} style={{ fontSize: "15px" }}>
+                  <LayoutDashboard size={16} /> Dashboard
                 </Link>
                 {(session.user as any)?.role === "ADMIN" && (
-                  <Link href="/admin" className="nav-link" onClick={() => setMobileOpen(false)} style={{ fontSize: "16px", padding: "14px 16px" }}>
-                    <Shield size={18} /> Admin
+                  <Link href="/admin" className="nav-link" onClick={() => setMobileOpen(false)} style={{ fontSize: "15px", color: "var(--accent)" }}>
+                    <Shield size={16} /> Admin Panel
                   </Link>
                 )}
                 <button
                   onClick={() => { signOut({ callbackUrl: "/" }); setMobileOpen(false); }}
                   className="btn-secondary"
-                  style={{ width: "100%", justifyContent: "center", padding: "14px" }}
+                  style={{ width: "100%", justifyContent: "center", color: "#EF476F" }}
                 >
                   <LogOut size={16} /> Sign Out
                 </button>
               </>
             ) : (
-              <div style={{ display: "flex", gap: "8px" }}>
+              <div style={{ display: "flex", gap: "10px" }}>
                 <Link href="/login" className="btn-secondary" onClick={() => setMobileOpen(false)} style={{ flex: 1, justifyContent: "center" }}>
                   Sign In
                 </Link>
@@ -166,17 +187,6 @@ export function Navbar() {
           </div>
         </div>
       )}
-
-      <style>{`
-        @media (max-width: 768px) {
-          .mobile-menu-btn { display: block !important; }
-          .hidden-mobile { display: none; }
-          .nav-auth-desktop { display: none; }
-        }
-        @media (min-width: 769px) {
-          .mobile-menu-btn { display: none !important; }
-        }
-      `}</style>
     </>
   );
 }

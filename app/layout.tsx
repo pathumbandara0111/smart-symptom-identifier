@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Toaster } from "sonner";
 import { Providers } from "@/components/Providers";
+import { ThreeStarfield } from "@/components/ThreeStarfield";
 
 export const metadata: Metadata = {
   title: "Smart Symptom Identifier — AI Health Assistant",
@@ -18,10 +19,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning className="relative bg-black min-h-screen text-[#E0F7FF] antialiased">
+        <ThreeStarfield />
         <Providers>
-          <Navbar />
-          <main>{children}</main>
+          <div className="relative z-10 flex min-h-screen flex-col">
+            <Navbar />
+            <main className="flex-1">{children}</main>
+          </div>
           <Toaster
             theme="dark"
             toastOptions={{

@@ -15,22 +15,23 @@
   --severe: #F4A261;
   --critical: #EF476F;
 
-  /* ── Background & Surface ─── */
-  --bg: #020B18;
-  --bg-2: #051525;
-  --bg-card: rgba(5, 21, 37, 0.7);
-  --bg-card-hover: rgba(0, 119, 182, 0.1);
-  --border: rgba(0, 180, 216, 0.15);
-  --border-hover: rgba(0, 180, 216, 0.4);
+  /* ── Background & Surface (True Black Space Theme) ─── */
+  --bg: #000000;
+  --bg-2: #030712;
+  --bg-card: rgba(2, 6, 17, 0.68);
+  --bg-card-hover: rgba(0, 119, 182, 0.15);
+  --border: rgba(0, 180, 216, 0.18);
+  --border-hover: rgba(0, 180, 216, 0.45);
 
   /* ── Text ─── */
   --text-primary: #E0F7FF;
   --text-secondary: #90E0EF;
   --text-muted: #4A7FA5;
+  --text-light: #C8EAF8;
 
   /* ── Glassmorphism ─── */
-  --glass-bg: rgba(0, 119, 182, 0.07);
-  --glass-border: rgba(0, 180, 216, 0.2);
+  --glass-bg: rgba(2, 6, 17, 0.65);
+  --glass-border: rgba(0, 180, 216, 0.22);
   --glass-blur: 16px;
 }
 
@@ -42,18 +43,19 @@
 
 html {
   scroll-behavior: smooth;
+  background: #000000;
 }
 
 body {
-  background: var(--bg);
+  background: #000000;
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: 
-    radial-gradient(ellipse at 20% 20%, rgba(0, 119, 182, 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(0, 180, 216, 0.08) 0%, transparent 50%);
+    radial-gradient(ellipse at 50% 0%, rgba(0, 119, 182, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(0, 207, 232, 0.06) 0%, transparent 50%);
   background-attachment: fixed;
 }
 
@@ -97,9 +99,10 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 8px;
   font-family: 'Inter', sans-serif;
+  text-decoration: none;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 119, 182, 0.4);
 }
@@ -128,9 +131,10 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 8px;
   font-family: 'Inter', sans-serif;
+  text-decoration: none;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   border-color: var(--primary-light);
   background: rgba(0, 180, 216, 0.1);
 }
@@ -150,6 +154,7 @@ h1, h2, h3, h4, h5, h6 {
   gap: 10px;
   font-family: 'Inter', sans-serif;
   animation: pulseBtn 2s infinite;
+  text-decoration: none;
 }
 
 .btn-emergency:hover {
@@ -227,6 +232,7 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 100;
   background: rgba(2, 11, 24, 0.85);
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--glass-border);
   padding: 0 24px;
   height: 70px;
@@ -244,6 +250,9 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .nav-links {
@@ -292,40 +301,30 @@ h1, h2, h3, h4, h5, h6 {
 .page-title {
   font-size: clamp(28px, 4vw, 44px);
   margin-bottom: 12px;
-  background: linear-gradient(135deg, #CAF0F8, #90E0EF);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .page-subtitle {
   color: var(--text-muted);
   font-size: 16px;
+  max-width: 600px;
+  margin: 0 auto;
   line-height: 1.6;
 }
 
-/* ── Step Cards ── */
+/* ── Step Items ── */
 .step-item {
   display: flex;
   gap: 16px;
-  padding: 16px;
-  border-radius: 12px;
-  background: rgba(5, 21, 37, 0.5);
-  border: 1px solid var(--glass-border);
-  margin-bottom: 12px;
-  transition: all 0.2s ease;
-}
-
-.step-item:hover {
-  border-color: var(--border-hover);
-  background: var(--bg-card-hover);
+  margin-bottom: 16px;
+  align-items: flex-start;
 }
 
 .step-number {
-  width: 32px;
+  min-width: 32px;
   height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -334,234 +333,45 @@ h1, h2, h3, h4, h5, h6 {
   flex-shrink: 0;
 }
 
-/* ── Emergency Banner ── */
-.emergency-banner {
-  background: rgba(239, 71, 111, 0.1);
-  border: 1px solid rgba(239, 71, 111, 0.4);
-  border-radius: 16px;
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  animation: criticalPulse 2s infinite;
-}
-
-/* ── Loading Spinner ── */
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--glass-border);
-  border-top-color: var(--primary-light);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ── Feature Grid ── */
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.feature-card {
-  padding: 32px 24px;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-  cursor: pointer;
-}
-
-.feature-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
+/* ── Modal Overlay ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(2, 11, 24, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-}
-
-/* ── Doctor Card ── */
-.doctor-card {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   padding: 20px;
 }
 
-.doctor-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
+.modal-content {
+  background: rgba(5, 21, 37, 0.95);
+  border: 1px solid var(--border-hover);
+  border-radius: 20px;
+  padding: 32px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  position: relative;
 }
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--primary); }
-
-/* ── Selection ── */
-::selection { background: rgba(0, 119, 182, 0.3); }
-
-/* ── Responsive ── */
-
-/* ─ Tablet & Mobile base (≤ 768px) ─ */
-@media (max-width: 768px) {
-  /* Navbar */
-  .nav-links { display: none; }
-  .navbar { padding: 0 16px; }
-
-  /* Layout */
-  .content-wrapper { padding: 0 16px; }
-  .page-container { padding-top: 80px; padding-bottom: 40px; }
-  .page-header { margin-bottom: 24px; }
-  .page-subtitle { font-size: 14px; }
-
-  /* Feature grid */
-  .feature-grid { grid-template-columns: 1fr 1fr; }
-  .feature-card { padding: 20px 16px; gap: 12px; }
-
-  /* Buttons */
-  .btn-emergency { padding: 12px 20px; font-size: 15px; }
-  .btn-primary  { padding: 10px 20px; font-size: 14px; }
-  .btn-secondary{ padding: 10px 20px; font-size: 14px; }
-
-  /* Form grids — collapse all two-column admin forms to single column */
-  form[style*="gridTemplateColumns"] {
-    grid-template-columns: 1fr !important;
-  }
-  form > div[style*="gridColumn"] {
-    grid-column: 1 !important;
-  }
-
-  /* Glass cards inside grids */
-  div[style*="gridTemplateColumns: repeat(auto-fit"] {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Stats bar on home page */
-  div[style*="gap: 60px"] {
-    gap: 24px !important;
-  }
-
-  /* Hero section padding */
-  section[style*="padding: \"60px 24px 80px\""],
-  section[style*="60px 24px 80px"] {
-    padding: 32px 16px 48px !important;
-  }
-
-  /* Bottom CTA */
-  div[style*="padding: \"60px 40px\""],
-  div[style*="60px 40px"] {
-    padding: 36px 20px !important;
-  }
-
-  /* Symptom Checker / Image Checker page forms */
-  .symptom-form-grid {
-    grid-template-columns: 1fr !important;
-  }
-  /* Symptom Checker results two-column → single column */
-  .symptom-result-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Admin dashboard cards */
-  .admin-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-
-
-  /* Admin dashboard cards */
-  .admin-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Page headers with flex (admin pages) */
-  div[style*="justifyContent: \"space-between\""][style*="flexWrap"] {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-  }
-
-  /* Admin edit forms */
-  div[style*="grid-template-columns: 1fr 1fr"] {
-    grid-template-columns: 1fr !important;
-  }
+/* ── Custom Scrollbar ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
-
-/* ─ Small Mobile (≤ 480px) ─ */
-@media (max-width: 480px) {
-  /* Feature grid single column */
-  .feature-grid { grid-template-columns: 1fr; }
-
-  /* Navbar logo size */
-  .nav-logo { font-size: 17px; }
-
-  /* Hero title */
-  h1[style*="clamp"] { font-size: clamp(28px, 8vw, 40px); }
-
-  /* Buttons go full width on tiny screens */
-  div[style*="justifyContent: \"center\""][style*="flexWrap: \"wrap\""] {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  /* Stats: 2 columns */
-  div[style*="gap: 24px"][style*="flexWrap: wrap"] {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 16px !important;
-  }
-
-  /* Step items */
-  .step-item { flex-direction: column; gap: 10px; }
-
-  /* Emergency banner */
-  .emergency-banner { flex-direction: column; text-align: center; }
-
-  /* Admin first-aid steps builder */
-  div[style*="display: \"flex\""][style*="gap: \"10px\""] {
-    flex-direction: column;
-  }
-
-  /* Glass cards on very small screens */
-  .glass-card { border-radius: 12px; }
-
-  /* Page title font clamp adjustment */
-  .page-title { font-size: clamp(22px, 6vw, 36px); }
-
-  /* Bottom CTA heading */
-  h2[style*="32px"] { font-size: 22px !important; }
-
-  /* Form inputs - larger touch targets */
-  .form-input { padding: 14px 14px; font-size: 16px; } /* 16px prevents iOS zoom */
-
-
+::-webkit-scrollbar-track {
+  background: rgba(2, 11, 24, 0.5);
 }
-
-/* ─ Tablet only (769px – 1024px) ─ */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .content-wrapper { padding: 0 24px; max-width: 100%; }
-  .feature-grid { grid-template-columns: repeat(3, 1fr); }
-  .navbar { padding: 0 24px; }
-
-  /* Two-column forms stay two-column on tablet */
-  .admin-form-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 180, 216, 0.2);
+  border-radius: 4px;
 }
-
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 180, 216, 0.4);
+}

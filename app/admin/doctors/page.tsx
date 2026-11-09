@@ -59,27 +59,26 @@ export default function AdminDoctorsPage() {
       
       if (!resDocs.ok) throw new Error(dataDocs.error);
       if (!resHosp.ok) throw new Error(dataHosp.error);
-      
-      setDoctors(dataDocs.doctors);
-      setHospitals(dataHosp.hospitals);
-      
-      if (dataHosp.hospitals.length > 0 && !formData.hospitalId) {
+
+      setDoctors(dataDocs.doctors || []);
+      setHospitals(dataHosp.hospitals || []);
+      if (dataHosp.hospitals?.length > 0 && !formData.hospitalId) {
         setFormData(prev => ({ ...prev, hospitalId: dataHosp.hospitals[0].id }));
       }
     } catch (err: any) {
-      toast.error(err.message || "Failed to load data");
+      toast.error(err.message || "Failed to load doctor data");
     } finally {
       setLoading(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this doctor?")) return;
+    if (!confirm("Are you sure you want to remove this doctor?")) return;
     try {
       const res = await fetch(`/api/doctors?id=${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
+      if (!res.ok) throw new Error("Failed to delete doctor");
       setDoctors(doctors.filter((d) => d.id !== id));
-      toast.success("Doctor removed");
+      toast.success("Doctor deleted successfully");
     } catch (err: any) {
       toast.error(err.message);
     }
@@ -88,7 +87,7 @@ export default function AdminDoctorsPage() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const reqBody = { ...formData, fee: parseFloat(formData.fee) };
+      const reqBody = { ...formData, fee: parseFloat(formData.fee) || 0 };
       const res = await fetch("/api/doctors", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -100,7 +99,7 @@ export default function AdminDoctorsPage() {
       const newDoctor = data.doctor;
       newDoctor.hospital = hospitals.find(h => h.id === formData.hospitalId);
       
-      setDoctors([...doctors, newDoctor]);
+      setDoctors([newDoctor, ...doctors]);
       setIsAdding(false);
       setFormData({ name: "", speciality: "", fee: "", phone: "", hospitalId: hospitals[0]?.id || "" });
       toast.success("Doctor added successfully");
@@ -111,10 +110,8 @@ export default function AdminDoctorsPage() {
 
   async function handleUpdate(e: React.FormEvent) {
     e.preventDefault();
-    if (!editingId) return;
-    
     try {
-      const reqBody = { id: editingId, ...formData, fee: parseFloat(formData.fee) };
+      const reqBody = { id: editingId, ...formData, fee: parseFloat(formData.fee) || 0 };
       const res = await fetch("/api/doctors", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -151,14 +148,13 @@ export default function AdminDoctorsPage() {
     return <div className="page-container flex items-center justify-center h-[50vh]"><Loader2 className="animate-spin text-[var(--primary-light)]" size={48} /></div>;
   }
 
-
   return (
     <div className="page-container">
       <div className="content-wrapper">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
           <div>
             <Link href="/admin" style={{ color: "var(--text-muted)", fontSize: "14px", textDecoration: "none", marginBottom: "8px", display: "inline-block" }}>
-              ← Back to Dashboard
+              ← Back to Admin Panel
             </Link>
             <h1 className="page-title" style={{ fontSize: "28px", marginBottom: "4px" }}>Manage Doctors</h1>
           </div>
@@ -175,8 +171,9 @@ export default function AdminDoctorsPage() {
           </button>
         </div>
 
+        {/* Add / Edit Form Card matching UI Screenshots */}
         {(isAdding || editingId) && (
-          <div className="glass-card" style={{ padding: "24px", marginBottom: "32px", border: `1px solid ${editingId ? 'var(--warning)' : 'var(--primary-light)'}` }}>
+          <div className="glass-card" style={{ padding: "24px", marginBottom: "32px", border: `1px solid ${editingId ? 'var(--moderate)' : 'var(--primary-light)'}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h3 style={{ fontSize: "18px" }}>{editingId ? "Edit Doctor Details" : "Add New Doctor"}</h3>
               <button onClick={() => { setIsAdding(false); setEditingId(null); }} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
@@ -184,7 +181,7 @@ export default function AdminDoctorsPage() {
               </button>
             </div>
             {hospitals.length === 0 ? (
-              <div style={{ color: "var(--danger)" }}>Please add a hospital first before adding a doctor.</div>
+              <div style={{ color: "var(--critical)" }}>Please add a hospital first before adding a doctor.</div>
             ) : (
               <form onSubmit={editingId ? handleUpdate : handleAdd} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
@@ -211,9 +208,9 @@ export default function AdminDoctorsPage() {
                     ))}
                   </select>
                 </div>
-                <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+                <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "8px" }}>
                   <button type="button" onClick={() => { setIsAdding(false); setEditingId(null); }} className="btn-secondary">Cancel</button>
-                  <button type="submit" className="btn-primary" style={{ background: editingId ? 'var(--warning)' : 'var(--primary-light)', borderColor: editingId ? 'var(--warning)' : 'var(--primary-light)' }}>
+                  <button type="submit" className="btn-primary" style={{ background: editingId ? 'var(--moderate)' : 'var(--primary-light)', color: editingId ? '#000' : '#fff' }}>
                     {editingId ? "Update Doctor" : "Save Doctor"}
                   </button>
                 </div>
@@ -222,9 +219,10 @@ export default function AdminDoctorsPage() {
           </div>
         )}
 
+        {/* Doctor Grid Cards matching Screenshot */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
           {doctors.map((d) => (
-            <div key={d.id} className="glass-card" style={{ padding: "20px", border: editingId === d.id ? '2px solid var(--warning)' : '1px solid var(--glass-border)' }}>
+            <div key={d.id} className="glass-card" style={{ padding: "20px", border: editingId === d.id ? '2px solid var(--moderate)' : '1px solid var(--glass-border)' }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <div style={{ background: "rgba(0, 180, 216, 0.1)", padding: "10px", borderRadius: "10px", color: "var(--primary-light)" }}>
@@ -240,7 +238,7 @@ export default function AdminDoctorsPage() {
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button 
                     onClick={() => startEdit(d)}
-                    style={{ background: "rgba(255, 209, 102, 0.1)", border: "none", padding: "6px", borderRadius: "6px", color: "var(--warning)", cursor: "pointer" }}
+                    style={{ background: "rgba(255, 209, 102, 0.1)", border: "none", padding: "6px", borderRadius: "6px", color: "var(--moderate)", cursor: "pointer" }}
                     aria-label="Edit"
                   >
                     <Edit2 size={16} />
@@ -258,18 +256,19 @@ export default function AdminDoctorsPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--text-light)" }}><HospitalIcon size={14} color="var(--primary-light)" /> {d.hospital?.name || "Unknown"}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--text-light)" }}><Phone size={14} color="var(--primary-light)" /> {d.phone}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                  <span style={{ color: "var(--success)", fontWeight: 600 }}>Rs. {d.fee}</span>
-                  <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>/ visit</span>
+                  <span style={{ color: "var(--mild)", fontWeight: 600 }}>Rs. {d.fee}</span>
+                  <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>/ consultation</span>
                 </div>
               </div>
             </div>
           ))}
           {doctors.length === 0 && (
             <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
-              No doctors found. Click "Add Doctor" to register one.
+              No doctors found. Click &quot;Add Doctor&quot; to register one.
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

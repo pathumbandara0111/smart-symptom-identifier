@@ -1,7 +1,11 @@
+import { NextRequest } from "next/server";
+import { requireAdmin } from "@/lib/adminAuth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
   try {
     // Basic aggregated statistics for the admin dashboard
     const totalSessions = await prisma.symptomSession.count();

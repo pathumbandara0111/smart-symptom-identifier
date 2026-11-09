@@ -1,3 +1,4 @@
+export {};
 /**
  * KAGGLE API CONNECTIVITY TESTER
  * Run with: npx tsx Test/check_kaggle.ts

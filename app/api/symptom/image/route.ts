@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { identifyImageSymptoms } from "@/lib/aiService";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 import { getServerSession } from "next-auth";
 
 export async function POST(request: NextRequest) {
+  const rl = rateLimit(`ai-image:${clientIp(request)}`, 15, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment and try again." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
   try {
     const formData = await request.formData();
     const image = formData.get("image") as File;

@@ -42,15 +42,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // 1. Create user in Firebase
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update display name in Firebase
       await updateProfile(userCredential.user, { displayName: name });
-      
       const idToken = await userCredential.user.getIdToken();
 
-      // 2. Sync with NextAuth (this will also create the user in Prisma via the authorize callback)
       const result = await nextAuthSignIn("firebase", {
         idToken,
         redirect: false,
@@ -97,12 +92,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="page-container" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-      <div style={{ width: "100%", maxWidth: "440px", padding: "0 24px" }}>
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <div style={{ fontSize: "48px", marginBottom: "16px" }}>✨</div>
+    <div className="page-container" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "85vh" }}>
+      <div style={{ width: "100%", maxWidth: "420px", padding: "0 24px" }}>
+        <div style={{ textAlign: "center", marginBottom: "36px" }}>
+          <div style={{ fontSize: "44px", marginBottom: "12px" }}>🩺</div>
           <h1 style={{ fontSize: "28px", fontFamily: "Outfit", fontWeight: 800, marginBottom: "8px" }}>Create Account</h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "15px" }}>Your free SymptomAI account</p>
+          <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Start checking symptoms with SmartSymptom AI</p>
         </div>
 
         <div className="glass-card" style={{ padding: "36px" }}>
@@ -113,49 +108,100 @@ export default function RegisterPage() {
             className="btn-secondary"
             style={{ width: "100%", justifyContent: "center", marginBottom: "24px", gap: "10px", background: "rgba(255,255,255,0.05)" }}
           >
-            {googleLoading ? <Loader2 className="animate-spin" size={20} /> : <GoogleIcon />}
-            Sign up with Google
+            {googleLoading ? <Loader2 size={18} className="animate-spin" /> : <GoogleIcon />}
+            Sign Up with Google
           </button>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" }}>
-            <div style={{ flex: 1, height: "1px", background: "var(--glass-border)" }} />
-            <span style={{ fontSize: "12px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>or email</span>
-            <div style={{ flex: 1, height: "1px", background: "var(--glass-border)" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
+            <div style={{ flex: 1, height: "1px", background: "var(--glass-border)" }}></div>
+            <span style={{ fontSize: "12px", color: "var(--text-muted)", textTransform: "uppercase" }}>Or with email</span>
+            <div style={{ flex: 1, height: "1px", background: "var(--glass-border)" }}></div>
           </div>
 
-          <form onSubmit={handleRegister}>
-            <div style={{ marginBottom: "20px" }}>
+          <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div>
               <label className="form-label">Full Name</label>
-              <input type="text" className="form-input" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
+              <input
+                type="text"
+                required
+                className="form-input"
+                placeholder="Dr. Samantha Perera"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
-            <div style={{ marginBottom: "20px" }}>
+
+            <div>
               <label className="form-label">Email Address</label>
-              <input type="email" className="form-input" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+              <input
+                type="email"
+                required
+                className="form-input"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
-            <div style={{ marginBottom: "20px" }}>
+
+            <div>
               <label className="form-label">Password</label>
               <div style={{ position: "relative" }}>
-                <input type={showPass ? "text" : "password"} className="form-input" placeholder="Min 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ paddingRight: "48px" }} />
-                <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
+                <input
+                  type={showPass ? "text" : "password"}
+                  required
+                  className="form-input"
+                  placeholder="At least 6 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{ paddingRight: "44px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  style={{
+                    position: "absolute",
+                    right: "14px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    color: "var(--text-muted)",
+                    cursor: "pointer",
+                  }}
+                >
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
-            <div style={{ marginBottom: "28px" }}>
+
+            <div>
               <label className="form-label">Confirm Password</label>
-              <input type="password" className="form-input" placeholder="Repeat password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required autoComplete="new-password" />
+              <input
+                type={showPass ? "text" : "password"}
+                required
+                className="form-input"
+                placeholder="Repeat password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+              />
             </div>
-            <button type="submit" className="btn-primary" disabled={loading} style={{ width: "100%", justifyContent: "center", fontSize: "16px", padding: "14px" }}>
-              {loading ? <><Loader2 size={18} style={{ animation: "spin 0.8s linear infinite" }} /> Creating account...</> : "Create Free Account"}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary"
+              style={{ width: "100%", justifyContent: "center", marginTop: "8px", padding: "14px" }}
+            >
+              {loading ? <Loader2 size={18} className="animate-spin" /> : "Create Account"}
             </button>
           </form>
 
-          <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--glass-border)" }}>
-            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
-              Already have an account?{" "}
-              <Link href="/login" style={{ color: "var(--primary-light)", fontWeight: 600 }}>Sign in</Link>
-            </p>
-          </div>
+          <p style={{ textAlign: "center", marginTop: "24px", fontSize: "14px", color: "var(--text-muted)" }}>
+            Already have an account?{" "}
+            <Link href="/login" style={{ color: "var(--primary-light)", textDecoration: "none", fontWeight: 600 }}>
+              Sign In
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -53,3 +53,12 @@ next-env.d.ts
 *.iml
 
 **/ephemeral/
+
+# credentials / secrets
+*credentials*.txt
+*Credentials*.txt
+d.json
+google-services.json
+firebase-adminsdk*.json
+service-account*.json
+*Google Cloud Console*.txt

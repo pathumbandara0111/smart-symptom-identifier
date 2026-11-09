@@ -2,7 +2,7 @@
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Loader2, Activity, Clock, ShieldAlert, BookOpen, MapPin, Search } from "lucide-react";
+import { Loader2, Activity, Clock, BookOpen, MapPin, Search, Phone, Shield } from "lucide-react";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -17,83 +17,96 @@ export default function DashboardPage() {
   }, [status]);
 
   if (loading || status === "loading") {
-    return <div className="page-container flex items-center justify-center h-[50vh]"><Loader2 className="animate-spin text-[var(--primary-light)]" size={48} /></div>;
+    return (
+      <div className="page-container flex items-center justify-center h-[50vh]">
+        <Loader2 className="animate-spin text-[var(--primary-light)]" size={48} />
+      </div>
+    );
   }
 
-  const name = session?.user?.name || "User";
+  const name = session?.user?.name || "Patient";
 
   return (
     <div className="page-container">
       <div className="content-wrapper">
-        <div className="page-header" style={{ marginBottom: "32px", textAlign: "left" }}>
-          <h1 className="page-title" style={{ fontSize: "32px" }}>Welcome back, {name}!</h1>
-          <p className="page-subtitle">What would you like to do today?</p>
+        <div className="page-header" style={{ textAlign: "left", marginBottom: "32px" }}>
+          <h1 className="page-title">Welcome, {name}</h1>
+          <p className="page-subtitle" style={{ margin: 0 }}>What would you like to do today?</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px", marginBottom: "40px" }}>
+        {/* Quick Actions */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "20px", marginBottom: "40px" }}>
           
-          {/* Quick Actions */}
-          <Link href="/symptom-checker" className="glass-card" style={{ padding: "24px", textDecoration: "none", transition: "transform 0.2s, border 0.2s" }} onMouseOver={(e) => e.currentTarget.style.borderColor = "var(--primary-light)"} onMouseOut={(e) => e.currentTarget.style.borderColor = "var(--glass-border)"}>
-            <div style={{ background: "rgba(0, 180, 216, 0.1)", width: "48px", height: "48px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary-light)", marginBottom: "16px" }}>
-              <Activity size={24} />
+          <Link href="/symptom-checker" className="glass-card" style={{ padding: "24px", textDecoration: "none", transition: "transform 0.2s, border 0.2s" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+              <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--primary-light)" }}>DIAGNOSIS</span>
+              <Activity size={24} color="var(--primary-light)" />
             </div>
-            <h3 style={{ fontSize: "18px", color: "white", marginBottom: "8px" }}>Check Symptoms</h3>
-            <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>Analyze new symptoms using AI precision.</p>
+            <h3 style={{ fontSize: "18px", color: "white", marginBottom: "6px" }}>Check Symptoms</h3>
+            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>Enter symptoms in plain text for fast AI analysis.</p>
           </Link>
 
-          <Link href="/image-checker" className="glass-card" style={{ padding: "24px", textDecoration: "none", transition: "transform 0.2s, border 0.2s" }} onMouseOver={(e) => e.currentTarget.style.borderColor = "var(--secondary)"} onMouseOut={(e) => e.currentTarget.style.borderColor = "var(--glass-border)"}>
-            <div style={{ background: "rgba(0, 207, 232, 0.1)", width: "48px", height: "48px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--secondary)", marginBottom: "16px" }}>
-              <Search size={24} />
+          <Link href="/image-checker" className="glass-card" style={{ padding: "24px", textDecoration: "none", transition: "transform 0.2s, border 0.2s" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+              <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--accent)" }}>IMAGE SCAN</span>
+              <Search size={24} color="var(--accent)" />
             </div>
-            <h3 style={{ fontSize: "18px", color: "white", marginBottom: "8px" }}>Image Scanner</h3>
-            <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>Upload an image for visual symptom analysis.</p>
+            <h3 style={{ fontSize: "18px", color: "white", marginBottom: "6px" }}>Upload Photo</h3>
+            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>Scan visible rashes, wounds, or skin symptoms.</p>
           </Link>
 
-          <Link href="/history" className="glass-card" style={{ padding: "24px", textDecoration: "none", transition: "transform 0.2s, border 0.2s" }} onMouseOver={(e) => e.currentTarget.style.borderColor = "var(--success)"} onMouseOut={(e) => e.currentTarget.style.borderColor = "var(--glass-border)"}>
-            <div style={{ background: "rgba(6, 214, 160, 0.1)", width: "48px", height: "48px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--success)", marginBottom: "16px" }}>
-              <Clock size={24} />
+          <Link href="/history" className="glass-card" style={{ padding: "24px", textDecoration: "none", transition: "transform 0.2s, border 0.2s" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+              <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--mild)" }}>RECORDS</span>
+              <Clock size={24} color="var(--mild)" />
             </div>
-            <h3 style={{ fontSize: "18px", color: "white", marginBottom: "8px" }}>My History</h3>
-            <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>View your past symptom logs and AI advice.</p>
-          </Link>
-
-        </div>
-
-        <h2 style={{ fontSize: "20px", marginBottom: "20px", paddingLeft: "8px", borderLeft: "4px solid var(--primary-light)" }}>Medical Resources</h2>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px" }}>
-          
-          <Link href="/first-aid" className="glass-card" style={{ padding: "24px", display: "flex", alignItems: "center", gap: "16px", textDecoration: "none", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "rgba(43, 85, 128, 0.4)"} onMouseOut={(e) => e.currentTarget.style.background = "var(--glass-bg)"}>
-            <div style={{ background: "rgba(255, 209, 102, 0.1)", padding: "12px", borderRadius: "12px", color: "var(--warning)" }}>
-              <BookOpen size={24} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: "16px", color: "white", marginBottom: "4px" }}>First-Aid Hub</h3>
-              <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Browse emergency protocols.</p>
-            </div>
-          </Link>
-
-          <Link href="/doctor-locator" className="glass-card" style={{ padding: "24px", display: "flex", alignItems: "center", gap: "16px", textDecoration: "none", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "rgba(43, 85, 128, 0.4)"} onMouseOut={(e) => e.currentTarget.style.background = "var(--glass-bg)"}>
-            <div style={{ background: "rgba(0, 180, 216, 0.1)", padding: "12px", borderRadius: "12px", color: "var(--primary-light)" }}>
-              <MapPin size={24} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: "16px", color: "white", marginBottom: "4px" }}>Find Doctors</h3>
-              <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Locate clinics and specialists near you.</p>
-            </div>
-          </Link>
-
-          <Link href="/emergency" className="glass-card" style={{ padding: "24px", display: "flex", alignItems: "center", gap: "16px", textDecoration: "none", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "rgba(239, 71, 111, 0.15)"} onMouseOut={(e) => e.currentTarget.style.background = "var(--glass-bg)"}>
-            <div style={{ background: "rgba(239, 71, 111, 0.1)", padding: "12px", borderRadius: "12px", color: "#EF476F" }}>
-              <ShieldAlert size={24} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: "16px", color: "#EF476F", marginBottom: "4px" }}>Emergency</h3>
-              <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Call 1990 immediately.</p>
-            </div>
+            <h3 style={{ fontSize: "18px", color: "white", marginBottom: "6px" }}>My History</h3>
+            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>View previous assessments and saved advice.</p>
           </Link>
 
         </div>
+
+        {/* Resources Section */}
+        <div style={{ marginTop: "32px" }}>
+          <h2 style={{ fontSize: "20px", marginBottom: "20px", paddingLeft: "8px", borderLeft: "4px solid var(--primary-light)" }}>
+            Medical Resources
+          </h2>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+            
+            <Link href="/first-aid" className="glass-card" style={{ padding: "24px", display: "flex", alignItems: "center", gap: "16px", textDecoration: "none" }}>
+              <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "rgba(6, 214, 160, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--mild)" }}>
+                <BookOpen size={24} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: "16px", color: "white", marginBottom: "4px" }}>First Aid Instructions</h4>
+                <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>Explore standard procedures for burns, choking, etc.</p>
+              </div>
+            </Link>
+
+            <Link href="/doctor-locator" className="glass-card" style={{ padding: "24px", display: "flex", alignItems: "center", gap: "16px", textDecoration: "none" }}>
+              <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "rgba(255, 209, 102, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--moderate)" }}>
+                <MapPin size={24} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: "16px", color: "white", marginBottom: "4px" }}>Nearby Doctors & Hospitals</h4>
+                <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>Locate clinics and specialists on map.</p>
+              </div>
+            </Link>
+
+            <Link href="/emergency" className="glass-card" style={{ padding: "24px", display: "flex", alignItems: "center", gap: "16px", textDecoration: "none", border: "1px solid rgba(239, 71, 111, 0.3)", background: "rgba(239, 71, 111, 0.05)" }}>
+              <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "rgba(239, 71, 111, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#EF476F" }}>
+                <Phone size={24} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: "16px", color: "#EF476F", marginBottom: "4px" }}>Emergency Hotlines</h4>
+                <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>Instant call to 1990 Suwa Seriya ambulance.</p>
+              </div>
+            </Link>
+
+          </div>
+        </div>
+
       </div>
     </div>
   );

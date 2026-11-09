@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { BookOpen, Search, Loader2 } from "lucide-react";
 
 interface Illness {
   id: string;
@@ -23,201 +24,238 @@ export default function FirstAidPage() {
   const [selected, setSelected] = useState<Illness | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetch("/api/firstaid")
       .then((r) => r.json())
       .then((d) => {
         setIllnesses(d.illnesses || []);
+        if (d.illnesses && d.illnesses.length > 0) {
+          setSelected(d.illnesses[0]);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
   const categories = ["all", ...Array.from(new Set(illnesses.map((i) => i.category)))];
-  const filtered = activeCategory === "all" ? illnesses : illnesses.filter((i) => i.category === activeCategory);
 
-  const DetailPanel = ({ illness }: { illness: Illness }) => (
-    <div className="glass-card" style={{ padding: "32px", alignSelf: "start" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-        <h2 style={{ fontSize: "22px" }}>{illness.name}</h2>
-        <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "24px", lineHeight: 1, padding: "4px 8px" }}>✕</button>
-      </div>
-      <p style={{ fontSize: "14px", color: "var(--text-muted)", marginBottom: "28px", lineHeight: 1.6 }}>{illness.description}</p>
-
-      <h4 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>
-        First Aid Steps
-      </h4>
-
-      {illness.firstAids
-        .sort((a, b) => a.step - b.step)
-        .map((fa) => (
-          <div key={fa.step} className="step-item">
-            <div className="step-number">{fa.step}</div>
-            <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-secondary)" }}>{fa.instruction}</p>
-          </div>
-        ))}
-
-      <div style={{ marginTop: "24px", padding: "14px", background: "rgba(239, 71, 111, 0.05)", border: "1px solid rgba(239, 71, 111, 0.15)", borderRadius: "10px" }}>
-        <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.6 }}>
-          ⚠️ This information is for guidance only. Always seek professional medical help for serious conditions.
-        </p>
-      </div>
-    </div>
-  );
+  const filtered = illnesses.filter((i) => {
+    const matchesCat = activeCategory === "all" || i.category === activeCategory;
+    const matchesSearch =
+      i.name.toLowerCase().includes(search.toLowerCase()) ||
+      i.description.toLowerCase().includes(search.toLowerCase());
+    return matchesCat && matchesSearch;
+  });
 
   return (
     <div className="page-container">
       <div className="content-wrapper">
         <div className="page-header">
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
-            <div style={{ width: "64px", height: "64px", borderRadius: "20px", background: "rgba(6, 214, 160, 0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px" }}>🩹</div>
-          </div>
-          <h1 className="page-title">First Aid Guide</h1>
-          <p className="page-subtitle">Doctor-verified step-by-step first aid instructions for common medical situations.</p>
-        </div>
-
-        {/* Category Filter */}
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center", marginBottom: "32px" }}>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+            <div
               style={{
-                padding: "8px 18px",
-                borderRadius: "50px",
-                border: "1px solid var(--glass-border)",
-                background: activeCategory === cat ? "rgba(0, 119, 182, 0.3)" : "transparent",
-                color: activeCategory === cat ? "var(--primary-light)" : "var(--text-muted)",
-                cursor: "pointer",
-                fontSize: "13px",
-                fontWeight: 600,
-                transition: "all 0.2s",
-                textTransform: "capitalize",
+                width: "64px",
+                height: "64px",
+                borderRadius: "20px",
+                background: "rgba(6, 214, 160, 0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "28px",
               }}
             >
-              {categoryIcons[cat] || "📋"} {cat}
-            </button>
-          ))}
+              🩹
+            </div>
+          </div>
+          <h1 className="page-title">First Aid Guide</h1>
+          <p className="page-subtitle">
+            Doctor-verified step-by-step first aid instructions for common medical situations and injuries.
+          </p>
         </div>
 
+        {/* Category Pills & Search */}
+        <div style={{ marginBottom: "32px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ position: "relative", maxWidth: "480px", margin: "0 auto", width: "100%" }}>
+            <Search
+              size={18}
+              style={{
+                position: "absolute",
+                left: "14px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--text-muted)",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search condition or symptom (e.g., Burn, Fever)..."
+              className="form-input"
+              style={{ paddingLeft: "42px" }}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => setActiveCategory(c)}
+                style={{
+                  padding: "8px 18px",
+                  borderRadius: "50px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  border: activeCategory === c ? "1px solid var(--primary-light)" : "1px solid var(--glass-border)",
+                  background: activeCategory === c ? "rgba(0, 180, 216, 0.2)" : "rgba(5, 21, 37, 0.6)",
+                  color: activeCategory === c ? "var(--text-primary)" : "var(--text-muted)",
+                  cursor: "pointer",
+                  textTransform: "capitalize",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <span>{categoryIcons[c] || "🩹"}</span>
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Content: Left Cards List, Right Detail Panel */}
         {loading ? (
-          <div style={{ textAlign: "center", padding: "60px" }}>
-            <div className="spinner" style={{ margin: "0 auto" }} />
-            <p style={{ marginTop: "16px", color: "var(--text-muted)" }}>Loading first aid guides...</p>
+          <div style={{ display: "flex", justifyContent: "center", padding: "60px", color: "var(--text-muted)" }}>
+            <Loader2 className="animate-spin" size={36} />
           </div>
         ) : (
-          <>
-            {/* ── Desktop Layout (≥769px): side-by-side ── */}
-            <div className="first-aid-desktop">
-              <div style={{ display: "grid", gridTemplateColumns: selected ? "280px 1fr" : "repeat(auto-fill, minmax(260px, 1fr))", gap: "16px" }}>
-                <div style={selected ? { display: "flex", flexDirection: "column", gap: "12px" } : { display: "contents" }}>
-                  {filtered.map((illness) => (
-                    <button
-                      key={illness.id}
-                      onClick={() => setSelected(selected?.id === illness.id ? null : illness)}
-                      className="glass-card"
-                      style={{
-                        padding: "24px", textAlign: "left", cursor: "pointer",
-                        border: selected?.id === illness.id ? "1px solid var(--primary-light)" : "1px solid var(--glass-border)",
-                        background: selected?.id === illness.id ? "rgba(0, 180, 216, 0.1)" : "var(--glass-bg)",
-                        width: "100%", display: "block",
-                      }}
-                    >
-                      <div style={{ fontSize: "32px", marginBottom: "12px" }}>{categoryIcons[illness.category] || "📋"}</div>
-                      <h3 style={{ fontSize: "16px", marginBottom: "8px", color: "var(--text-primary)" }}>{illness.name}</h3>
-                      <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.5 }}>{illness.description}</p>
-                      <p style={{ marginTop: "12px", fontSize: "12px", color: "var(--primary-light)", fontWeight: 600 }}>
-                        {illness.firstAids.length} steps →
-                      </p>
-                    </button>
-                  ))}
-                </div>
-                {selected && <DetailPanel illness={selected} />}
-              </div>
-            </div>
-
-            {/* ── Mobile Layout (≤768px): cards + bottom sheet modal ── */}
-            <div className="first-aid-mobile">
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                {filtered.map((illness) => (
-                  <button
-                    key={illness.id}
-                    onClick={() => setSelected(illness)}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1.3fr",
+              gap: "24px",
+              alignItems: "start",
+            }}
+          >
+            {/* Illnesses List */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "680px", overflowY: "auto", paddingRight: "4px" }}>
+              {filtered.map((item) => {
+                const isSelected = selected?.id === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => setSelected(item)}
                     className="glass-card"
                     style={{
-                      padding: "16px", textAlign: "left", cursor: "pointer",
-                      border: selected?.id === illness.id ? "1px solid var(--primary-light)" : "1px solid var(--glass-border)",
-                      background: selected?.id === illness.id ? "rgba(0, 180, 216, 0.1)" : "var(--glass-bg)",
-                      width: "100%", display: "block",
+                      padding: "20px",
+                      cursor: "pointer",
+                      border: isSelected ? "1px solid var(--primary-light)" : "1px solid var(--glass-border)",
+                      background: isSelected ? "rgba(0, 180, 216, 0.12)" : "var(--glass-bg)",
+                      transition: "all 0.2s ease",
                     }}
                   >
-                    <div style={{ fontSize: "24px", marginBottom: "8px" }}>{categoryIcons[illness.category] || "📋"}</div>
-                    <h3 style={{ fontSize: "14px", marginBottom: "6px", color: "var(--text-primary)" }}>{illness.name}</h3>
-                    <p style={{ fontSize: "11px", color: "var(--primary-light)", fontWeight: 600 }}>
-                      {illness.firstAids.length} steps →
-                    </p>
-                  </button>
-                ))}
-              </div>
-
-              {/* Bottom Sheet Modal */}
-              {selected && (
-                <div
-                  style={{
-                    position: "fixed", bottom: 0, left: 0, right: 0, top: 0,
-                    background: "rgba(0,0,0,0.6)", zIndex: 200,
-                    display: "flex", alignItems: "flex-end",
-                  }}
-                  onClick={() => setSelected(null)}
-                >
-                  <div
-                    style={{
-                      background: "var(--bg-2)", borderTop: "1px solid var(--glass-border)",
-                      borderRadius: "24px 24px 0 0", padding: "24px", width: "100%",
-                      maxHeight: "80vh", overflowY: "auto",
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {/* Handle bar */}
-                    <div style={{ width: "40px", height: "4px", background: "var(--glass-border)", borderRadius: "2px", margin: "0 auto 20px" }} />
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                      <h2 style={{ fontSize: "20px" }}>{selected.name}</h2>
-                      <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "24px", padding: "4px 8px" }}>✕</button>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
+                      <h3 style={{ fontSize: "17px", fontWeight: 700, color: "var(--text-primary)" }}>{item.name}</h3>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          background: "rgba(0, 180, 216, 0.15)",
+                          color: "var(--primary-light)",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {item.category}
+                      </span>
                     </div>
-                    <p style={{ fontSize: "14px", color: "var(--text-muted)", marginBottom: "24px", lineHeight: 1.6 }}>{selected.description}</p>
-                    <h4 style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>
-                      First Aid Steps
-                    </h4>
-                    {selected.firstAids.sort((a, b) => a.step - b.step).map((fa) => (
-                      <div key={fa.step} className="step-item">
-                        <div className="step-number">{fa.step}</div>
-                        <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-secondary)" }}>{fa.instruction}</p>
-                      </div>
-                    ))}
-                    <div style={{ marginTop: "20px", padding: "12px", background: "rgba(239, 71, 111, 0.05)", border: "1px solid rgba(239, 71, 111, 0.15)", borderRadius: "10px" }}>
-                      <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                        ⚠️ Guidance only. Always seek professional medical help for serious conditions.
-                      </p>
+                    <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.5, margin: 0 }}>
+                      {item.description}
+                    </p>
+                    <div style={{ marginTop: "10px", fontSize: "12px", color: "var(--secondary)", fontWeight: 500 }}>
+                      {item.firstAids.length} Action Steps →
                     </div>
                   </div>
+                );
+              })}
+
+              {filtered.length === 0 && (
+                <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
+                  No first aid guides match your search.
                 </div>
               )}
             </div>
-          </>
+
+            {/* Step Detail Panel */}
+            {selected ? (
+              <div className="glass-card" style={{ padding: "32px", position: "sticky", top: "90px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "24px" }}>{categoryIcons[selected.category] || "🩹"}</span>
+                  <h2 style={{ fontSize: "24px", color: "var(--text-primary)" }}>{selected.name}</h2>
+                </div>
+
+                <p style={{ fontSize: "14px", color: "var(--text-muted)", marginBottom: "24px", lineHeight: 1.6 }}>
+                  {selected.description}
+                </p>
+
+                <h4
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    color: "var(--text-secondary)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  Step-by-Step Instructions
+                </h4>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                  {[...selected.firstAids]
+                    .sort((a, b) => a.step - b.step)
+                    .map((fa) => (
+                      <div key={fa.step} className="step-item">
+                        <div className="step-number">{fa.step}</div>
+                        <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-primary)", paddingTop: "4px" }}>
+                          {fa.instruction}
+                        </p>
+                      </div>
+                    ))}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "28px",
+                    padding: "16px",
+                    background: "rgba(239, 71, 111, 0.08)",
+                    border: "1px solid rgba(239, 71, 111, 0.2)",
+                    borderRadius: "12px",
+                  }}
+                >
+                  <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.6, margin: 0 }}>
+                    ⚠️ This information is for general first-aid guidance only. In serious or worsening situations, contact emergency services or consult a doctor immediately.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="glass-card" style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+                Select a condition from the list to view first aid instructions.
+              </div>
+            )}
+          </div>
         )}
       </div>
-
-      <style>{`
-        .first-aid-desktop { display: block; }
-        .first-aid-mobile  { display: none; }
-        @media (max-width: 768px) {
-          .first-aid-desktop { display: none; }
-          .first-aid-mobile  { display: block; }
-        }
-      `}</style>
     </div>
   );
 }
-
-

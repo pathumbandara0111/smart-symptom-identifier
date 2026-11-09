@@ -1,9 +1,8 @@
 "use client";
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Camera, Upload, X, Send, Loader2 } from "lucide-react";
+import { Camera, Upload, X, Send, Loader2, AlertTriangle, Cpu, Sparkles, MapPin } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { toast } from "sonner";
 import { FeedbackForm } from "@/components/FeedbackForm";
 
@@ -15,6 +14,13 @@ interface AnalysisResult {
   emergencyRequired: boolean;
   additionalInfo: string;
   disclaimer: string;
+  source?: "kaggle+gemini" | "kaggle" | "gemini-fallback";
+  kaggle?: {
+    label: string;
+    confidence: number | null;
+    lowConfidence: boolean;
+  };
+  warnings?: string[];
 }
 
 export default function ImageCheckerPage() {
@@ -111,7 +117,7 @@ export default function ImageCheckerPage() {
   const severityConfig: Record<string, { label: string; class: string }> = {
     mild: { label: "🟢 Mild", class: "severity-mild" },
     moderate: { label: "🟡 Moderate", class: "severity-moderate" },
-    severe: { label: "🔴 Severe", class: "severity-severe" },
+    severe: { label: "🟠 Severe", class: "severity-severe" },
     critical: { label: "🚨 CRITICAL", class: "severity-critical" },
   };
   const sConfig = severityConfig[result?.severity || "mild"] || severityConfig.mild;
@@ -127,11 +133,11 @@ export default function ImageCheckerPage() {
           </div>
           <h1 className="page-title">Image Symptom Analyzer</h1>
           <p className="page-subtitle">
-            Upload a photo of a visible symptom (rash, wound, swelling, etc.) and our SmartSymptom AI will analyze it.
+            Upload a photo of a visible symptom (rash, skin lesion, wound, swelling) and our SmartSymptom AI will analyze it.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: result ? "1fr 1fr" : "1fr", gap: "24px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: result ? "1fr 1fr" : "1fr", gap: "24px", alignItems: "start" }}>
           {/* Upload Panel */}
           <div className="glass-card" style={{ padding: "32px" }}>
             <h2 style={{ fontSize: "20px", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
@@ -143,32 +149,29 @@ export default function ImageCheckerPage() {
               <div
                 {...getRootProps()}
                 style={{
-                  border: `2px dashed ${isDragActive ? "var(--primary-light)" : "var(--glass-border)"}`,
+                  border: `2px dashed ${isDragActive ? 'var(--primary-light)' : 'var(--glass-border)'}`,
                   borderRadius: "16px",
                   padding: "48px 24px",
                   textAlign: "center",
                   cursor: "pointer",
-                  background: isDragActive ? "rgba(0, 180, 216, 0.05)" : "transparent",
                   transition: "all 0.3s ease",
+                  background: isDragActive ? "rgba(0, 119, 182, 0.1)" : "rgba(5, 21, 37, 0.5)",
                   marginBottom: "24px",
                 }}
               >
                 <input {...getInputProps()} />
-                <div style={{ fontSize: "48px", marginBottom: "16px" }}>📸</div>
-                <p style={{ color: "var(--text-secondary)", fontWeight: 600, marginBottom: "8px" }}>
-                  {isDragActive ? "Drop image here..." : "Drag & drop or click to select"}
-                </p>
+                <Upload size={40} style={{ color: "var(--primary-light)", margin: "0 auto 16px" }} />
+                <h3 style={{ fontSize: "16px", marginBottom: "8px" }}>
+                  {isDragActive ? "Drop image here..." : "Drag & drop your photo here"}
+                </h3>
                 <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>
-                  Supports JPEG, PNG, WEBP — Max 10MB
+                  Or click to browse from device (JPG, PNG, WebP up to 10MB)
                 </p>
               </div>
             ) : (
-              <div style={{ position: "relative", marginBottom: "24px", borderRadius: "12px", overflow: "hidden" }}>
-                <img
-                  src={preview}
-                  alt="Symptom preview"
-                  style={{ width: "100%", maxHeight: "300px", objectFit: "cover", borderRadius: "12px" }}
-                />
+              <div style={{ position: "relative", marginBottom: "24px", borderRadius: "16px", overflow: "hidden", border: "1px solid var(--glass-border)", maxHeight: "300px", display: "flex", alignItems: "center", justifyContent: "center", background: "#000" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={preview} alt="Uploaded symptom" style={{ width: "100%", height: "auto", maxHeight: "300px", objectFit: "contain" }} />
                 <button
                   onClick={removeImage}
                   style={{
@@ -183,17 +186,12 @@ export default function ImageCheckerPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    cursor: "pointer",
                     color: "white",
+                    cursor: "pointer",
                   }}
                 >
                   <X size={16} />
                 </button>
-                <div style={{ padding: "12px", background: "rgba(5, 21, 37, 0.8)" }}>
-                  <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-                    📁 {file?.name} — {(file!.size / 1024).toFixed(0)} KB
-                  </p>
-                </div>
               </div>
             )}
 
@@ -202,88 +200,157 @@ export default function ImageCheckerPage() {
               <textarea
                 className="form-input"
                 rows={3}
-                placeholder="Describe what you see and any symptoms: e.g. 'Red rash on arm for 3 days, started itching yesterday'"
+                placeholder="e.g., Appeared 3 days ago, itchy, spreads on right arm..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                style={{ resize: "vertical" }}
               />
             </div>
 
             <button
-              className="btn-primary"
               onClick={handleAnalyze}
               disabled={loading || !file}
-              style={{ width: "100%", justifyContent: "center", fontSize: "16px", padding: "14px" }}
+              className="btn-primary"
+              style={{ width: "100%", justifyContent: "center", padding: "14px" }}
             >
               {loading ? (
-                <><Loader2 size={18} style={{ animation: "spin 0.8s linear infinite" }} /> Analyzing Image...</>
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Analyzing Image...
+                </>
               ) : (
-                <><Upload size={18} /> Analyze Image</>
+                <>
+                  <Send size={18} />
+                  Analyze Photo
+                </>
               )}
             </button>
-
-            <div style={{ marginTop: "20px", padding: "14px", background: "rgba(255, 209, 102, 0.05)", border: "1px solid rgba(255, 209, 102, 0.2)", borderRadius: "10px" }}>
-              <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                💡 <strong style={{ color: "#FFD166" }}>Tips:</strong> Use clear, well-lit photos. Avoid blurry images. Do NOT upload images of sensitive or private areas.
-              </p>
-            </div>
           </div>
 
-          {/* Results */}
+          {/* Result Panel */}
           {result && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div className="glass-card" style={{ padding: "32px" }}>
               {result.emergencyRequired && (
-                <div className="emergency-banner">
-                  <span style={{ fontSize: "32px" }}>🚨</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, color: "#EF476F", fontSize: "16px", marginBottom: "4px" }}>EMERGENCY!</div>
-                    <div style={{ fontSize: "14px", color: "var(--text-muted)" }}>Critical condition detected. Seek help immediately.</div>
+                <div
+                  style={{
+                    padding: "16px",
+                    background: "rgba(239, 71, 111, 0.15)",
+                    border: "1px solid rgba(239, 71, 111, 0.4)",
+                    borderRadius: "12px",
+                    marginBottom: "20px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                  }}
+                >
+                  <AlertTriangle size={24} color="#EF476F" style={{ flexShrink: 0 }} />
+                  <div>
+                    <h4 style={{ color: "#EF476F", fontSize: "14px", fontWeight: 700 }}>
+                      URGENT MEDICAL ATTENTION RECOMMENDED
+                    </h4>
+                    <p style={{ color: "var(--text-muted)", fontSize: "12px", marginTop: "2px" }}>
+                      Critical indicators detected. Consult a healthcare professional immediately.
+                    </p>
                   </div>
-                  <Link href="/emergency" className="btn-emergency" style={{ padding: "10px 20px", fontSize: "14px" }}>📞 Call 1990</Link>
                 </div>
               )}
 
-              <div className="glass-card" style={{ padding: "28px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
-                  <h3 style={{ fontSize: "18px" }}>Image Analysis Result</h3>
-                  <span className={`severity-badge ${sConfig.class}`}>{sConfig.label}</span>
-                </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+                <span className={`severity-badge ${sConfig.class}`}>
+                  {sConfig.label}
+                </span>
 
-                <div style={{ marginBottom: "20px" }}>
-                  <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-muted)", marginBottom: "10px", textTransform: "uppercase" }}>Possible Conditions</p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                    {result.possibleIllnesses.map((illness, i) => (
-                      <span key={i} style={{ background: i === 0 ? "rgba(0, 119, 182, 0.2)" : "rgba(0, 180, 216, 0.08)", border: `1px solid ${i === 0 ? "rgba(0, 180, 216, 0.4)" : "rgba(0, 180, 216, 0.15)"}`, color: i === 0 ? "var(--primary-light)" : "var(--text-secondary)", padding: "6px 14px", borderRadius: "50px", fontSize: "14px", fontWeight: i === 0 ? 600 : 400 }}>
-                        {i === 0 && "⭐ "}{illness}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ background: "rgba(255, 209, 102, 0.08)", border: "1px solid rgba(255, 209, 102, 0.2)", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px" }}>
-                  <p style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 600 }}>Recommended Specialist</p>
-                  <p style={{ fontSize: "14px", color: "#FFD166", fontWeight: 600 }}>👨‍⚕️ {result.specialistType}</p>
-                </div>
-
-                {result.additionalInfo && (
-                  <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6, marginBottom: "16px" }}>ℹ️ {result.additionalInfo}</p>
-                )}
-
-                <Link href="/doctor-locator" className="btn-secondary" style={{ width: "100%", justifyContent: "center" }}>
-                  🗺️ Find Nearby Doctors
-                </Link>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    padding: "4px 10px",
+                    borderRadius: "50px",
+                    background: "rgba(0, 180, 216, 0.1)",
+                    border: "1px solid rgba(0, 180, 216, 0.25)",
+                    color: "var(--primary-light)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                  }}
+                >
+                  {result.source === "gemini-fallback" ? (
+                    <>
+                      <Sparkles size={13} /> Gemini Vision Backup
+                    </>
+                  ) : (
+                    <>
+                      <Cpu size={13} /> MobileNetV2 + Gemini
+                    </>
+                  )}
+                </span>
               </div>
 
-              <div className="glass-card" style={{ padding: "28px" }}>
-                <h3 style={{ fontSize: "18px", marginBottom: "20px" }}>🩹 First Aid Steps</h3>
+              <div style={{ marginBottom: "24px" }}>
+                <h3 style={{ fontSize: "13px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
+                  Identified Condition
+                </h3>
+                <div style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "4px" }}>
+                  {result.possibleIllnesses[0]}
+                </div>
+                {result.kaggle?.confidence && (
+                  <p style={{ fontSize: "12px", color: "var(--primary-light)", marginTop: "4px" }}>
+                    Model Confidence: {(result.kaggle.confidence * 100).toFixed(1)}%
+                  </p>
+                )}
+              </div>
+
+              {result.additionalInfo && (
+                <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: 1.6, marginBottom: "24px" }}>
+                  {result.additionalInfo}
+                </p>
+              )}
+
+              <div style={{ marginBottom: "24px" }}>
+                <h4 style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "14px" }}>
+                  Recommended First Aid Steps
+                </h4>
                 {result.firstAidSteps.map((step, i) => (
                   <div key={i} className="step-item">
                     <div className="step-number">{i + 1}</div>
-                    <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-secondary)" }}>{step}</p>
+                    <p style={{ fontSize: "14px", lineHeight: 1.5, color: "var(--text-secondary)" }}>
+                      {step.replace(/^Step\s*\d+\s*[:.-]\s*/i, "")}
+                    </p>
                   </div>
                 ))}
-                <p style={{ marginTop: "16px", fontSize: "12px", color: "var(--text-muted)" }}>{result.disclaimer}</p>
               </div>
+
+              <div
+                style={{
+                  padding: "16px",
+                  background: "rgba(0, 119, 182, 0.1)",
+                  borderRadius: "12px",
+                  border: "1px solid var(--border)",
+                  marginBottom: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase" }}>Recommended Specialist</div>
+                  <div style={{ fontSize: "16px", fontWeight: 600, color: "var(--primary-light)" }}>
+                    {result.specialistType}
+                  </div>
+                </div>
+                <Link
+                  href={`/doctor-locator?q=${encodeURIComponent(result.specialistType)}`}
+                  className="btn-primary"
+                  style={{ padding: "8px 18px", fontSize: "13px" }}
+                >
+                  <MapPin size={14} /> Find Specialist
+                </Link>
+              </div>
+
+              <p style={{ fontSize: "11px", color: "var(--text-muted)", lineHeight: 1.5, marginBottom: "20px" }}>
+                {result.disclaimer}
+              </p>
+
               <FeedbackForm />
             </div>
           )}

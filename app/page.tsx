@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, Camera, MapPin, Phone, BookOpen, ArrowRight, Shield } from "lucide-react";
+import { ArrowRight, Shield } from "lucide-react";
 
 const features = [
   {
@@ -44,218 +44,150 @@ const features = [
   },
 ];
 
-const stats = [
-  { value: "20+", label: "Illnesses Covered" },
-  { value: "AI", label: "SmartSymptom AI" },
-  { value: "24/7", label: "Available Anytime" },
-  { value: "Free", label: "No Cost to Use" },
-];
-
 export default function HomePage() {
   return (
     <div className="page-container">
-      {/* Hero Section */}
-      <section
-        style={{
-          textAlign: "center",
-          padding: "60px 24px 80px",
-          maxWidth: "800px",
-          margin: "0 auto",
-        }}
-      >
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            background: "rgba(0, 119, 182, 0.1)",
-            border: "1px solid rgba(0, 180, 216, 0.2)",
-            borderRadius: "50px",
-            padding: "6px 16px",
-            fontSize: "13px",
-            color: "var(--text-secondary)",
-            marginBottom: "32px",
-          }}
-        >
-          <span style={{ color: "#06D6A0" }}>●</span>
-          Powered by SmartSymptom AI Engine
-        </div>
-
-        <h1
-          style={{
-            fontSize: "clamp(36px, 6vw, 64px)",
-            fontWeight: 800,
-            marginBottom: "20px",
-            lineHeight: 1.1,
-          }}
-        >
-          <span
+      <div className="content-wrapper">
+        {/* Hero Section */}
+        <div style={{ textAlign: "center", marginBottom: "60px", paddingTop: "20px" }}>
+          <div
             style={{
-              background: "linear-gradient(135deg, #CAF0F8, #90E0EF, #00B4D8)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "8px 16px",
+              borderRadius: "50px",
+              background: "rgba(0, 180, 216, 0.1)",
+              border: "1px solid rgba(0, 180, 216, 0.3)",
+              color: "var(--primary-light)",
+              fontSize: "14px",
+              marginBottom: "24px",
             }}
           >
-            Smart Symptom
-          </span>
-          <br />
-          <span style={{ color: "var(--text-primary)" }}>Identifier</span>
-        </h1>
+            <Shield size={16} />
+            AI-Powered Healthcare Assistant
+          </div>
 
-        <p
-          style={{
-            fontSize: "18px",
-            color: "var(--text-muted)",
-            lineHeight: 1.7,
-            marginBottom: "40px",
-            maxWidth: "560px",
-            margin: "0 auto 40px",
-          }}
-        >
-          AI-powered health assistant that identifies possible illnesses, provides
-          first-aid guidance, and connects you with nearby doctors — instantly.
-        </p>
+          <h1
+            style={{
+              fontSize: "clamp(36px, 6vw, 64px)",
+              lineHeight: 1.15,
+              marginBottom: "20px",
+            }}
+          >
+            Your Health, Understood{" "}
+            <span
+              style={{
+                background: "linear-gradient(135deg, #00B4D8, #00CFE8)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Instantly.
+            </span>
+          </h1>
 
-        <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
-          <Link href="/symptom-checker" className="btn-primary" style={{ fontSize: "16px", padding: "14px 32px" }}>
-            <Activity size={18} />
-            Check Symptoms Now
-            <ArrowRight size={16} />
-          </Link>
-          <Link href="/emergency" className="btn-emergency" style={{ fontSize: "16px", padding: "14px 32px" }}>
-            <Phone size={18} />
-            Emergency — Call 1990
-          </Link>
+          <p className="page-subtitle" style={{ fontSize: "18px", marginBottom: "36px" }}>
+            Identify illnesses from text or photos, access verified first-aid guidance, find nearby doctors,
+            and reach emergency help in seconds.
+          </p>
+
+          <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
+            <Link href="/symptom-checker" className="btn-primary" style={{ padding: "14px 32px", fontSize: "16px" }}>
+              Check Symptoms Now <ArrowRight size={18} />
+            </Link>
+            <Link href="/image-checker" className="btn-secondary" style={{ padding: "14px 32px", fontSize: "16px" }}>
+              Upload Photo
+            </Link>
+          </div>
         </div>
 
-        {/* Disclaimer */}
-        <p
-          style={{
-            marginTop: "24px",
-            fontSize: "12px",
-            color: "var(--text-muted)",
-            opacity: 0.7,
-          }}
-        >
-          ⚠️ For informational purposes only. Not a substitute for professional medical advice.
-        </p>
-      </section>
-
-      {/* Stats Bar */}
-      <section
-        style={{
-          background: "var(--glass-bg)",
-          borderTop: "1px solid var(--glass-border)",
-          borderBottom: "1px solid var(--glass-border)",
-          padding: "24px 0",
-          marginBottom: "80px",
-        }}
-      >
+        {/* Feature Cards Grid */}
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "60px",
-            flexWrap: "wrap",
-            padding: "0 24px",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "24px",
+            marginBottom: "60px",
           }}
         >
-          {stats.map((s) => (
-            <div key={s.label} style={{ textAlign: "center" }}>
+          {features.map((f) => (
+            <Link
+              key={f.href}
+              href={f.href}
+              className="glass-card"
+              style={{
+                padding: "28px",
+                textDecoration: "none",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               <div
                 style={{
-                  fontSize: "28px",
-                  fontWeight: 800,
-                  fontFamily: "Outfit",
-                  background: "linear-gradient(135deg, #00B4D8, #90E0EF)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
+                  width: "56px",
+                  height: "56px",
+                  borderRadius: "16px",
+                  background: f.iconBg,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "26px",
+                  marginBottom: "20px",
                 }}
-              >
-                {s.value}
-              </div>
-              <div style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "4px" }}>
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="content-wrapper" style={{ marginBottom: "80px" }}>
-        <div className="page-header">
-          <h2 className="page-title">Everything You Need</h2>
-          <p className="page-subtitle">
-            A complete health support system in one place
-          </p>
-        </div>
-
-        <div className="feature-grid">
-          {features.map((f) => (
-            <Link key={f.href} href={f.href} className="glass-card feature-card" style={{ textDecoration: "none" }}>
-              <div
-                className="feature-icon"
-                style={{ background: f.iconBg, fontSize: "28px" }}
               >
                 {f.icon}
               </div>
-              <div>
-                <h3 style={{ fontSize: "18px", marginBottom: "8px", color: f.color }}>
-                  {f.title}
-                </h3>
-                <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: 1.6 }}>
-                  {f.desc}
-                </p>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", color: f.color, fontSize: "13px", fontWeight: 600 }}>
-                Open <ArrowRight size={14} />
-              </div>
+
+              <h3 style={{ fontSize: "20px", marginBottom: "8px", color: "var(--text-primary)" }}>{f.title}</h3>
+              <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: 1.6, flex: 1, marginBottom: "16px" }}>
+                {f.desc}
+              </p>
+
+              <span
+                style={{
+                  color: f.color,
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                Explore <ArrowRight size={16} />
+              </span>
             </Link>
           ))}
         </div>
-      </section>
 
-      {/* Bottom CTA */}
-      <section className="content-wrapper" style={{ textAlign: "center", marginBottom: "60px" }}>
+        {/* Emergency Callout Banner */}
         <div
           className="glass-card"
           style={{
-            padding: "60px 40px",
-            background: "linear-gradient(135deg, rgba(0, 119, 182, 0.1), rgba(0, 180, 216, 0.05))",
+            padding: "32px",
+            border: "1px solid rgba(239, 71, 111, 0.3)",
+            background: "rgba(239, 71, 111, 0.05)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "20px",
           }}
         >
-          <h2 style={{ fontSize: "32px", marginBottom: "16px" }}>
-            Ready to Get Started?
-          </h2>
-          <p style={{ color: "var(--text-muted)", marginBottom: "32px", fontSize: "16px" }}>
-            Create a free account to save your symptom history and get personalized insights.
-          </p>
-          <Link href="/register" className="btn-primary" style={{ fontSize: "16px", padding: "14px 36px" }}>
-            Create Free Account <ArrowRight size={16} />
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+              <span style={{ fontSize: "20px" }}>🚨</span>
+              <h3 style={{ fontSize: "20px", color: "#EF476F" }}>Medical Emergency?</h3>
+            </div>
+            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+              If you or someone nearby is experiencing life-threatening symptoms, do not hesitate.
+            </p>
+          </div>
+          <Link href="/emergency" className="btn-emergency" style={{ textDecoration: "none" }}>
+            Call Emergency (1990)
           </Link>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer
-        style={{
-          textAlign: "center",
-          padding: "24px",
-          borderTop: "1px solid var(--glass-border)",
-          color: "var(--text-muted)",
-          fontSize: "13px",
-        }}
-      >
-        <p>
-          Smart Symptom Identifier — ITBNM-2211-0139 & ITBNM-2211-0111 | Horizon Campus
-        </p>
-        <p style={{ marginTop: "8px", opacity: 0.6 }}>
-          ⚠️ Not a substitute for professional medical advice. Always consult a qualified doctor.
-        </p>
-      </footer>
+      </div>
     </div>
   );
 }
