@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
 import { DISCLAIMER } from "./types";
 import type { AiLogger } from "./logger";
+import { getSkinConditionRule } from "./rules";
 
 export const GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-3.5-flash-lite").trim();
 const TIMEOUT_MS = 20_000;
@@ -80,18 +81,31 @@ export async function geminiEnrich(
 ): Promise<GeminiDetails> {
   log.geminiStart(GEMINI_MODEL, "adding details to Kaggle diagnosis");
   const t0 = Date.now();
+  const skinRule = getSkinConditionRule(kaggleLabel);
   try {
     const prompt = `
 Our trained model diagnosed: "${kaggleLabel}"${confidence !== null ? ` (confidence ${(confidence * 100).toFixed(0)}%)` : ""}.
 The condition is FIXED. Do NOT change or replace it. Put exactly this (full medical name if it is a code) as the first and only item of possibleIllnesses.
 ${low ? "The model confidence is LOW. In additionalInfo, include a short cautionary note that this is uncertain and a doctor should confirm." : ""}
+${skinRule ? `CLINICAL DERMATOLOGY RULE:
+- Known severity: "${skinRule.severity}"
+- Urgency: "${skinRule.urgency}"
+- Emergency Required: ${skinRule.emergencyRequired ? "true" : "false"}
+- Recommended specialist: "${skinRule.specialist}"
+- You MUST set "severity" to "${skinRule.severity}".
+` : ""}
 Patient: age group ${ctx.age || "not specified"}, gender ${ctx.gender || "not specified"}.
-User description: "${userText || "image only"}"
+User description: "${userText || "image symptom check"}"
 Give severity, first-aid steps, specialist type, emergencyRequired and a short explanation.
 Schema:
 ${SCHEMA_HINT}`;
     const out = await run([prompt]);
     out.possibleIllnesses = [kaggleLabel]; // enforce: Kaggle label is the diagnosis
+    if (skinRule) {
+      out.severity = skinRule.severity;
+      out.emergencyRequired = skinRule.emergencyRequired;
+      if (skinRule.specialist) out.specialistType = skinRule.specialist;
+    }
     log.geminiOk(Date.now() - t0);
     return out;
   } catch (e: any) {

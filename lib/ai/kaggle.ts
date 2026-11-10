@@ -128,8 +128,12 @@ export async function kaggleImage(imageBase64: string, log: AiLogger): Promise<K
   const label = IMAGE_CODE_MAP[code] ?? code;
   const confidence = Number.isFinite(Number(json.confidence)) ? Number(json.confidence) : null;
   const topK = parseTopK(json.top_k)?.map((t) => ({ ...t, label: IMAGE_CODE_MAP[t.label] ?? t.label }));
-  log.kaggleOk(`label="${label}" (${code})  conf=${confidence === null ? "n/a" : confidence.toFixed(2)}`, Date.now() - t0);
-  return { result: { label, confidence, topK } };
+  const severity = json.severity as any;
+  const urgency = json.urgency ? String(json.urgency) : undefined;
+  const emergencyRequired = typeof json.emergency_required === "boolean" ? json.emergency_required : undefined;
+
+  log.kaggleOk(`label="${label}" (${code})  conf=${confidence === null ? "n/a" : confidence.toFixed(2)}${severity ? `  severity=${severity}` : ""}`, Date.now() - t0);
+  return { result: { label, confidence, topK, severity, urgency, emergencyRequired } };
 }
 
 /** Quick health probe used by /api/ai/health and the startup check. */

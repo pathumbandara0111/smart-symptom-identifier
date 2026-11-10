@@ -9,7 +9,7 @@
 import { createLogger, logSystem } from "./logger";
 import { kaggleText, kaggleImage, kaggleHealth, kaggleBaseUrl } from "./kaggle";
 import { geminiEnrich, geminiFullText, geminiFullImage, geminiHealth, isGeminiActive, GEMINI_MODEL, type GeminiDetails } from "./gemini";
-import { detectRedFlags, emergencyWarning } from "./rules";
+import { detectRedFlags, emergencyWarning, getSkinConditionRule } from "./rules";
 import { DISCLAIMER, type KaggleResult, type PredictionResponse } from "./types";
 
 export type { PredictionResponse } from "./types";
@@ -60,7 +60,7 @@ async function buildFromKaggle(
   }
 
   if (details) {
-    return {
+    const res: PredictionResponse = {
       ...details,
       possibleIllnesses: [k.label],
       source: "kaggle+gemini",
@@ -68,16 +68,34 @@ async function buildFromKaggle(
       geminiModel: GEMINI_MODEL,
       warnings,
     };
+    if (isImage) {
+      const skinRule = getSkinConditionRule(k.label);
+      res.severity = k.severity ?? skinRule?.severity ?? "moderate";
+      res.emergencyRequired = k.emergencyRequired ?? skinRule?.emergencyRequired ?? false;
+      if (skinRule?.specialist) res.specialistType = skinRule.specialist;
+    }
+    return res;
   }
 
   const local = await localDetails(k.label);
+  const skinRule = isImage ? getSkinConditionRule(k.label) : undefined;
+
   return {
     possibleIllnesses: [k.label],
-    severity: "moderate",
-    firstAidSteps: local?.steps ?? ["Rest and monitor your symptoms.", "Stay hydrated.", "Please consult a doctor for professional advice."],
-    specialistType: "General Practitioner",
-    emergencyRequired: false,
-    additionalInfo: local?.info ?? "Result from the custom-trained model. Detailed guidance is temporarily unavailable.",
+    severity: k.severity ?? skinRule?.severity ?? "moderate",
+    firstAidSteps:
+      skinRule?.firstAid ??
+      local?.steps ?? [
+        "Rest and monitor your symptoms.",
+        "Stay hydrated.",
+        "Please consult a doctor for professional advice.",
+      ],
+    specialistType: skinRule?.specialist ?? "General Practitioner",
+    emergencyRequired: k.emergencyRequired ?? skinRule?.emergencyRequired ?? false,
+    additionalInfo:
+      skinRule?.description ??
+      local?.info ??
+      "Result from the custom-trained model. Detailed guidance is temporarily unavailable.",
     disclaimer: DISCLAIMER,
     source: "kaggle",
     kaggle: kaggleInfo,

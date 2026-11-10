@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Toaster } from "sonner";
 import { Providers } from "@/components/Providers";
 import { ThreeStarfield } from "@/components/ThreeStarfield";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 export const metadata: Metadata = {
   title: "Smart Symptom Identifier — AI Health Assistant",
@@ -22,9 +23,10 @@ export default function RootLayout({
       <body suppressHydrationWarning className="relative bg-black min-h-screen text-[#E0F7FF] antialiased">
         <ThreeStarfield />
         <Providers>
-          <div className="relative z-10 flex min-h-screen flex-col">
+          <div className="relative z-10 flex min-h-screen flex-col pb-16 md:pb-0">
             <Navbar />
             <main className="flex-1">{children}</main>
+            <MobileBottomNav />
           </div>
           <Toaster
             theme="dark"

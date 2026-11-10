@@ -29,6 +29,9 @@ export interface KaggleResult {
   label: string;
   confidence: number | null;
   topK?: { label: string; confidence: number }[];
+  severity?: Severity;
+  urgency?: string;
+  emergencyRequired?: boolean;
 }
 
 export const DISCLAIMER =
