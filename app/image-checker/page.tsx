@@ -54,7 +54,7 @@ export default function ImageCheckerPage() {
   };
 
   /**
-   * Helper to resize image to 224x224 (required by MobileNetV2)
+   * Helper to resize image to 260x260 (required by EfficientNetB2)
    * This drastically reduces payload size for Ngrok/Kaggle.
    */
   const resizeImage = (file: File): Promise<Blob> => {
@@ -66,10 +66,10 @@ export default function ImageCheckerPage() {
         img.src = event.target?.result as string;
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          canvas.width = 224;
-          canvas.height = 224;
+          canvas.width = 260;
+          canvas.height = 260;
           const ctx = canvas.getContext("2d");
-          ctx?.drawImage(img, 0, 0, 224, 224);
+          ctx?.drawImage(img, 0, 0, 260, 260);
           canvas.toBlob((blob) => {
             resolve(blob as Blob);
           }, "image/jpeg", 0.8);
@@ -278,7 +278,7 @@ export default function ImageCheckerPage() {
                     </>
                   ) : (
                     <>
-                      <Cpu size={13} /> MobileNetV2 + Gemini
+                      <Cpu size={13} /> EfficientNetB2 + Gemini
                     </>
                   )}
                 </span>
