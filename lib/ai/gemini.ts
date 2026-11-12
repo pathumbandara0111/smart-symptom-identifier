@@ -136,12 +136,25 @@ export async function geminiFullImage(
   description: string | undefined,
   log: AiLogger
 ): Promise<GeminiDetails> {
-  log.geminiStart(GEMINI_MODEL, "full image analysis (fallback)");
+  log.geminiStart(GEMINI_MODEL, "full image multimodal analysis");
   const t0 = Date.now();
   try {
+    const prompt = `You are a clinical diagnostic vision expert inside SmartSymptom AI.
+Analyze the uploaded photograph of the patient's visible health symptom or clinical sign.
+Extra patient description: "${description || "none"}".
+
+CLINICAL EVALUATION RULES:
+1. Facial Signs: If the image shows facial asymmetry, unilateral mouth drooping, or eyelid ptosis, this is an acute neurological sign (Suspected Stroke / Bell's Palsy / Facial Nerve Palsy). Set severity: "critical", emergencyRequired: true, specialistType: "Emergency Physician / Neurologist", and urgently recommend dialing 1990.
+2. Dermatological Signs: If this is a rash, eczema, psoriasis, hives, acne, fungal infection, keratosis pilaris, or skin allergy, identify the exact dermatological condition accurately with practical non-drug first-aid steps.
+3. Eye, Oral, or Wound Signs: Accurately identify conjunctivitis, ulceration, burn, or wound, and categorize severity appropriately.
+4. Output 1 to 3 distinct possible conditions in order of clinical likelihood (primary first).
+
+Schema:
+${SCHEMA_HINT}`;
+
     const out = await run([
       { inlineData: { data: imageBase64, mimeType } },
-      `The user uploaded a photo of a visible symptom. Extra description: "${description || "none"}".\nAnalyze the visible symptom and list 1-3 possible conditions (most likely first). If the image does not show a medical symptom, say so in additionalInfo.\nSchema:\n${SCHEMA_HINT}`,
+      prompt,
     ]);
     log.geminiOk(Date.now() - t0);
     return out;

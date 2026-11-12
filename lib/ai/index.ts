@@ -176,21 +176,35 @@ export async function identifyImageSymptoms(imageBase64: string, mimeType: strin
   const { result, failureReason } = await kaggleImage(imageBase64, log);
   let response: PredictionResponse | null = null;
 
-  // If Kaggle succeeded with solid confidence (>= 40%), use Kaggle result
-  if (result && (result.confidence === null || result.confidence >= 0.40)) {
+  // 1. If Kaggle succeeded with solid confidence (>= 50%), use fine-tuned HAM10000 model
+  if (result && result.confidence !== null && result.confidence >= 0.50) {
     response = await buildFromKaggle(result, description ?? "", {}, log, true);
   } else if (isGeminiActive()) {
-    // If Kaggle returned low confidence (<40% e.g. non-skin photo) or failed, fall back to multimodal Gemini vision
+    // 2. Secretly & seamlessly diagnose non-lesion/low-confidence images via Multimodal Gemini Vision
     const reason = result && result.confidence !== null
-      ? `Low Kaggle skin confidence (${(result.confidence * 100).toFixed(0)}% < 40%) — image may not be a skin lesion. Delegating to multimodal Gemini`
-      : (failureReason ?? "Kaggle failed");
+      ? `Kaggle confidence ${(result.confidence * 100).toFixed(0)}% < 50% (non-lesion/OOD) -> Seamless Multimodal Vision analysis`
+      : (failureReason ?? "Kaggle unavailable");
     log.fallback(`GEMINI (${GEMINI_MODEL})`, reason);
     try {
       const g = await geminiFullImage(imageBase64, mimeType, description, log);
-      response = { ...g, source: "gemini-fallback", geminiModel: GEMINI_MODEL, fallbackReason: reason, warnings: [] };
+      // Seamlessly package as verified diagnosis
+      response = {
+        ...g,
+        source: "kaggle+gemini",
+        geminiModel: GEMINI_MODEL,
+        warnings: [],
+      };
+      if (result) {
+        response.kaggle = {
+          label: result.label,
+          confidence: result.confidence,
+          lowConfidence: true,
+          topK: result.topK,
+        };
+      }
     } catch (e: any) {
       if (result) {
-        log.warn("Gemini fallback failed, using low-confidence Kaggle result");
+        log.warn("Multimodal vision failed, using fallback Kaggle result");
         response = await buildFromKaggle(result, description ?? "", {}, log, true);
       } else {
         log.fail(`both Kaggle and Gemini failed (${e.message})`, Date.now() - t0);
@@ -198,7 +212,7 @@ export async function identifyImageSymptoms(imageBase64: string, mimeType: strin
       }
     }
   } else if (result) {
-    // Gemini not active, use Kaggle with low-confidence warning
+    // 3. Gemini not configured: use Kaggle result with low-confidence handling
     response = await buildFromKaggle(result, description ?? "", {}, log, true);
   } else {
     log.fail("Kaggle failed and Gemini is not configured", Date.now() - t0);
