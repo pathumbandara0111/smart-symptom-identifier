@@ -77,6 +77,29 @@ async function buildFromKaggle(
     return res;
   }
 
+  if (isImage && k.confidence !== null && k.confidence < 0.40) {
+    return {
+      possibleIllnesses: ["Inconclusive / Out-of-Distribution Image"],
+      severity: "moderate",
+      firstAidSteps: [
+        "1. Ensure the uploaded photo is a clear, well-lit, close-up of a skin mole or spot.",
+        "2. The custom model is trained strictly on HAM10000 skin lesions (moles, melanoma, carcinomas). Full faces or non-lesion skin cannot be classified.",
+        "3. If you have acute facial droop, numbness, or neurological symptoms, call 1990 immediately.",
+        "4. Consult a dermatologist or medical doctor for a professional clinical examination.",
+      ],
+      specialistType: "Dermatologist / General Practitioner",
+      emergencyRequired: false,
+      additionalInfo: `The custom skin lesion model returned low confidence (${((k.confidence ?? 0) * 100).toFixed(0)}%). This indicates the photo is likely out-of-distribution (not a close-up pigmented skin lesion).`,
+      disclaimer: DISCLAIMER,
+      source: "kaggle",
+      kaggle: kaggleInfo,
+      warnings: [
+        `⚠️ Low model confidence (${((k.confidence ?? 0) * 100).toFixed(0)}%). Unrecognized image type for dermatological classifier.`,
+        IMAGE_NOTE,
+      ],
+    };
+  }
+
   const local = await localDetails(k.label);
   const skinRule = isImage ? getSkinConditionRule(k.label) : undefined;
 
