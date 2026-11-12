@@ -237,9 +237,9 @@ export async function startupSelfCheck() {
   if (checked) return;
   checked = true;
   const h = await aiHealth();
-  logSystem("──────── AI SELF-CHECK ────────");
+  logSystem("=== AI SERVICE INITIALIZATION ===");
   logSystem(`Kaggle : ${h.kaggle.online ? "ONLINE " : "OFFLINE"} (${h.kaggle.ms} ms) ${h.kaggle.detail}`);
   logSystem(`Gemini : ${h.gemini.online ? "ONLINE " : "OFFLINE"} (${h.gemini.ms} ms) model=${h.gemini.model} ${h.gemini.detail}`);
-  logSystem(`Mode   : Kaggle PRIMARY → Gemini adds details → Gemini FALLBACK if Kaggle fails`);
-  logSystem("───────────────────────────────");
+  logSystem(`Mode   : Kaggle PRIMARY -> Gemini ENRICHMENT -> Gemini FALLBACK`);
+  logSystem("=================================");
 }

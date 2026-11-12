@@ -42,18 +42,18 @@ export function createLogger(): AiLogger {
   const out = (s: string) => console.log(`${tag} ${s}`);
   return {
     id,
-    start: (kind, detail) => out(`${paint(C.bold, "▶")} ${kind} request  ${detail}`),
-    kaggleTry: (endpoint, a, m) => out(`🧠 KAGGLE  → POST ${endpoint} ... attempt ${a}/${m}`),
-    kaggleOk: (s, ms) => out(`${paint(C.green, "✅ KAGGLE  OK")}  ${s}  ${(ms / 1000).toFixed(1)}s`),
-    kaggleFail: (r, a, m) => out(`${paint(C.red, "❌ KAGGLE  FAILED")}  reason=${r}  attempt ${a}/${m}`),
-    geminiStart: (model, purpose) => out(`✨ GEMINI  (${model}) ${purpose} ...`),
-    geminiOk: (ms, extra) => out(`${paint(C.green, "✅ GEMINI  OK")}  ${(ms / 1000).toFixed(1)}s${extra ? "  " + extra : ""}`),
-    geminiFail: (r) => out(`${paint(C.red, "❌ GEMINI  FAILED")}  reason=${r}`),
-    fallback: (to, r) => out(`${paint(C.yellow, "⚠️  FALLBACK")} → ${to}  (${r})`),
-    warn: (m) => out(`${paint(C.yellow, "⚠️  WARN")}  ${m}`),
+    start: (kind, detail) => out(`[START] ${kind} request: ${detail}`),
+    kaggleTry: (endpoint, a, m) => out(`[KAGGLE] POST ${endpoint} (attempt ${a}/${m})`),
+    kaggleOk: (s, ms) => out(`${paint(C.green, "[KAGGLE:OK]")} ${s} (${(ms / 1000).toFixed(1)}s)`),
+    kaggleFail: (r, a, m) => out(`${paint(C.red, "[KAGGLE:FAIL]")} reason=${r} (attempt ${a}/${m})`),
+    geminiStart: (model, purpose) => out(`[GEMINI] (${model}) ${purpose}...`),
+    geminiOk: (ms, extra) => out(`${paint(C.green, "[GEMINI:OK]")} (${(ms / 1000).toFixed(1)}s)${extra ? " " + extra : ""}`),
+    geminiFail: (r) => out(`${paint(C.red, "[GEMINI:FAIL]")} reason=${r}`),
+    fallback: (to, r) => out(`${paint(C.yellow, "[FALLBACK]")} -> ${to} (${r})`),
+    warn: (m) => out(`${paint(C.yellow, "[WARN]")} ${m}`),
     done: (src, ms, extra) =>
-      out(`${paint(C.magenta, "■ DONE")}  source=${src}  total=${(ms / 1000).toFixed(1)}s${extra ? "  " + extra : ""}`),
-    fail: (r, ms) => out(`${paint(C.red, "■ FAILED")}  ${r}  total=${(ms / 1000).toFixed(1)}s`),
+      out(`${paint(C.magenta, "[DONE]")} source=${src} | total=${(ms / 1000).toFixed(1)}s${extra ? " | " + extra : ""}`),
+    fail: (r, ms) => out(`${paint(C.red, "[FAIL]")} ${r} | total=${(ms / 1000).toFixed(1)}s`),
   };
 }
 
