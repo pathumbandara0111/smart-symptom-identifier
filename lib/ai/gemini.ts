@@ -4,7 +4,7 @@ import { DISCLAIMER } from "./types";
 import type { AiLogger } from "./logger";
 import { getSkinConditionRule } from "./rules";
 
-export const GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-1.5-flash").trim();
+export const GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-3.5-flash-lite").trim();
 const TIMEOUT_MS = 20_000;
 
 export function geminiKey(): string | undefined {
