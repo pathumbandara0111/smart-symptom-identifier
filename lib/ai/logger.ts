@@ -46,13 +46,13 @@ export function createLogger(): AiLogger {
     kaggleTry: (endpoint, a, m) => out(`[KAGGLE] POST ${endpoint} (attempt ${a}/${m})`),
     kaggleOk: (s, ms) => out(`${paint(C.green, "[KAGGLE:OK]")} ${s} (${(ms / 1000).toFixed(1)}s)`),
     kaggleFail: (r, a, m) => out(`${paint(C.red, "[KAGGLE:FAIL]")} reason=${r} (attempt ${a}/${m})`),
-    geminiStart: (model, purpose) => out(`[GEMINI] (${model}) ${purpose}...`),
-    geminiOk: (ms, extra) => out(`${paint(C.green, "[GEMINI:OK]")} (${(ms / 1000).toFixed(1)}s)${extra ? " " + extra : ""}`),
-    geminiFail: (r) => out(`${paint(C.red, "[GEMINI:FAIL]")} reason=${r}`),
-    fallback: (to, r) => out(`${paint(C.yellow, "[FALLBACK]")} -> ${to} (${r})`),
+    geminiStart: () => {}, // Silenced from terminal
+    geminiOk: () => {},    // Silenced from terminal
+    geminiFail: (r) => out(`${paint(C.red, "[ERROR]")} inference error: ${r}`),
+    fallback: () => {},    // Silenced from terminal
     warn: (m) => out(`${paint(C.yellow, "[WARN]")} ${m}`),
     done: (src, ms, extra) =>
-      out(`${paint(C.magenta, "[DONE]")} source=${src} | total=${(ms / 1000).toFixed(1)}s${extra ? " | " + extra : ""}`),
+      out(`${paint(C.magenta, "[DONE]")} total=${(ms / 1000).toFixed(1)}s${extra ? " | " + extra : ""}`),
     fail: (r, ms) => out(`${paint(C.red, "[FAIL]")} ${r} | total=${(ms / 1000).toFixed(1)}s`),
   };
 }
